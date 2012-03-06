@@ -123,6 +123,11 @@ alan_relation intersect_relation(struct alan_web* web, int a, int b, alan_relati
 		return 0;
 	}
 
+	////
+	if(a==1 && b == 6){
+		printf("Intersecting with: %s\n",relation_to_ascii(rel));
+	}
+	////
 	if(a<b){
 		web->relations[b][a] = intersect_relations(reverse_relation(rel),web->relations[b][a]);
 		return reverse_relation(web->relations[b][a]);

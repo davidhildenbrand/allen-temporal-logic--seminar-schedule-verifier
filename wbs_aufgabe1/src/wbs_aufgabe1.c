@@ -14,22 +14,21 @@
 struct file1_entry{
 	unsigned short nr;
 	char* name;
-	short dozent;
-	unsigned short gruppe;
-	unsigned short laenge;
-	unsigned short raum;
+	short lecturer;
+	unsigned short group;
+	unsigned short length;
+	unsigned short room;
 };
 
 struct file2_entry{
-	unsigned short vorher;
-	unsigned short aufbauend;
+	unsigned short pre;
+	unsigned short post;
 };
 
 struct file3_entry{
-	unsigned short gruppe;
-	unsigned short veranstaltung;
-	unsigned short zeit_stunde;
-	unsigned short zeit_minute;
+	unsigned short group;
+	unsigned short event;
+	unsigned short time_in_minutes;
 };
 
 
@@ -51,7 +50,7 @@ struct file2_entry* file2_entries[FILE2_ENTRY_COUNT_MAX];
 unsigned short file2_entry_count = 0;
 
 //20 entries for now
-char file3_path[] = "/Users/davidhildenbrand/Dropbox/DHBW/6. Semester/WBS/Aufgabe 1/A_017_3p_Bsp.csv";
+char file3_path[] = "/Users/davidhildenbrand/Dropbox/DHBW/6. Semester/WBS/Aufgabe 1/A_017_3n_Bsp.csv";
 #define FILE3_ENTRY_COUNT_MAX 20
 struct file3_entry* file3_entries[FILE3_ENTRY_COUNT_MAX];
 unsigned short file3_entry_count = 0;
@@ -80,9 +79,8 @@ short add_dozent(char* name){
 
 	dozenten[dozenten_count] = (char* )malloc(strlen(name)*sizeof(char));
 	strcpy(dozenten[dozenten_count],name);
-	dozenten_count++;
 
-	return 0;
+	return dozenten_count++;
 }
 
 short read_next(char* source,char*destination,unsigned short* offset){
@@ -146,21 +144,21 @@ int read_file1(){
 		read_next(buffer,temp,&offset);
 		int index = find_dozent(temp);
 		if(index >= 0)
-			new_entry->dozent = index;
+			new_entry->lecturer = index;
 		else
-			new_entry->dozent = add_dozent(temp);
+			new_entry->lecturer = add_dozent(temp);
 
 		//read the gruppe
 		read_next(buffer,temp,&offset);
-		new_entry->gruppe = atoi(temp);
+		new_entry->group = atoi(temp);
 
 		//read the länge
 		read_next(buffer,temp,&offset);
-		new_entry->laenge = atoi(temp);
+		new_entry->length = atoi(temp);
 
 		//read the raum
 		read_next(buffer,temp,&offset);
-		new_entry->raum = atoi(temp);
+		new_entry->room = atoi(temp);
 
 		file1_entries[file1_entry_count++] = new_entry;
 	}
@@ -200,11 +198,11 @@ int read_file2(){
 
 		//read the vorher
 		read_next(buffer,temp,&offset);
-		new_entry->vorher = atoi(temp);
+		new_entry->pre = atoi(temp);
 
 		//read the aufbauend
 		read_next(buffer,temp,&offset);
-		new_entry->aufbauend = atoi(temp);
+		new_entry->post = atoi(temp);
 
 		file2_entries[file2_entry_count++] = new_entry;
 	}
@@ -244,11 +242,11 @@ int read_file3(){
 
 		//read the gruppe
 		read_next(buffer,temp,&offset);
-		new_entry->gruppe = atoi(temp);
+		new_entry->group = atoi(temp);
 
 		//read the veranstaltung
 		read_next(buffer,temp,&offset);
-		new_entry->veranstaltung = atoi(temp);
+		new_entry->event = atoi(temp);
 
 		//read the zeit
 		read_next(buffer,temp,&offset);
@@ -257,10 +255,10 @@ int read_file3(){
 		time[0] = temp[0];
 		time[1] = temp[1];
 		time[2] = '\0';
-		new_entry->zeit_stunde = atoi(time);
+		new_entry->time_in_minutes = atoi(time)*60;
 		time[0] = temp[3];
 		time[1] = temp[4];
-		new_entry->zeit_minute = atoi(time);
+		new_entry->time_in_minutes += atoi(time);
 
 		file3_entries[file3_entry_count++] = new_entry;
 	}
@@ -277,13 +275,13 @@ void process_group_dependence(struct alan_web* web){
 	for(i=0;i<file1_entry_count;++i){
 		//iterate starting at the next position
 		for(j=i+1;j<file1_entry_count;++j){
-			if(file1_entries[i]->gruppe == file1_entries[j]->gruppe){
+			if(file1_entries[i]->group == file1_entries[j]->group){
 				//if first one is smaller that 90min, they can meet
-				if(file1_entries[i]->laenge < 2){
+				if(file1_entries[i]->length < 2){
 					relation |= Am;
 				}
 				//if second one is smaller that 90min, they can meet
-				if(file1_entries[j]->laenge < 2){
+				if(file1_entries[j]->length < 2){
 					relation |= Ami;
 				}
 				//intersect the relation
@@ -300,8 +298,8 @@ void process_lecturer_dependence(struct alan_web* web){
 	//iterate entries in file 1
 	for(i=0;i<file1_entry_count;++i){
 		//iterate starting at the next position
-		for(j=i;j<file1_entry_count;++j){
-			if(file1_entries[i]->dozent == file1_entries[j]->dozent){
+		for(j=i+1;j<file1_entry_count;++j){
+			if(file1_entries[i]->lecturer == file1_entries[j]->lecturer){
 				//intersect the relation
 				intersect_relation(web,i,j,relation);
 			}
@@ -316,8 +314,8 @@ void process_room_dependence(struct alan_web* web){
 	//iterate entries in file 1
 	for(i=0;i<file1_entry_count;++i){
 		//iterate starting at the next position
-		for(j=i;j<file1_entry_count;++j){
-			if(file1_entries[i]->raum == file1_entries[j]->raum){
+		for(j=i+1;j<file1_entry_count;++j){
+			if(file1_entries[i]->room == file1_entries[j]->room){
 				//intersect the relation
 				intersect_relation(web,i,j,relation);
 			}
@@ -350,15 +348,112 @@ void process_dependencies(struct alan_web* web){
 	for(i=0;i<file2_entry_count;++i){
 		cur = file2_entries[i];
 
-		unsigned short pre = find_index_in_file1(cur->vorher);
-		unsigned short post = find_index_in_file1(cur->aufbauend);
+		unsigned short pre = find_index_in_file1(cur->pre);
+		unsigned short post = find_index_in_file1(cur->post);
 
 		intersect_relation(web,pre,post,relation);
 	}
 }
 
+alan_relation intervals_to_alan(unsigned int starta, unsigned int stopa, unsigned int startb, unsigned int stopb){
+	alan_relation destination = 0;
+
+	if(starta > stopa){
+		unsigned int temp = starta;
+		starta = stopa;
+		stopa = temp;
+	}
+	if(startb > stopb){
+		unsigned int temp = startb;
+		startb = stopb;
+		stopb = temp;
+	}
+
+	if(starta == startb){
+		if(stopa == stopb)
+			destination |= Aeq;
+		else if(stopa < stopb)
+			destination |= As;
+		else
+			destination |= Asi;
+	}
+	else if(stopa == stopb){
+		if(starta > startb)
+			destination |= Af;
+		else
+			destination |= Afi;
+
+	}
+	else if(starta < startb){
+		if(stopa < startb)
+			destination |= Asm;
+		else if(stopa == startb)
+			destination |= Am;
+		else if(stopa > stopb)
+			destination |= Adi;
+		else
+			destination |= Ao;
+	}
+	else if(startb < starta){
+		if(stopb < starta)
+			destination |= Abi;
+		else if(stopb == starta)
+			destination |= Ami;
+		else if(stopb > stopa)
+			destination |= Ad;
+		else
+			destination |= Aoi;
+	}
+
+	return destination;
+}
+
+short process_check(struct alan_web* web){
+	int i,j;
+
+	for(i=0;i<file3_entry_count;++i){
+		for(j=i+1;j<file3_entry_count;++j){
+			struct file3_entry* entrya = file3_entries[i];
+			struct file3_entry* entryb = file3_entries[j];
+
+			unsigned short indexa = find_index_in_file1(entrya->event);
+			unsigned short indexb = find_index_in_file1(entryb->event);
+			unsigned short starta = entrya->time_in_minutes;
+			unsigned short startb = entryb->time_in_minutes;
+			unsigned short stopa =  starta;
+			unsigned short stopb = startb;
+
+			if(file1_entries[indexa]->length == 2)
+				stopa += 90;
+			else
+				stopa += 45;
+
+			if(file1_entries[indexb]->length == 2)
+							stopb += 90;
+						else
+							stopb += 45;
+
+			alan_relation rel = intervals_to_alan(starta,stopa,startb,stopb);
+			alan_relation rel2 = get_relation(web,indexa,indexb);
+			alan_relation erg = intersect_relations(rel2,rel);
+
+			if(erg == 0){
+				printf("Checking %d and %d.\n",entrya->event,entryb->event);
+				printf("Index %d and %d.\n",indexa,indexb);
+				printf("'%s' A '%s' = '%s'\n",relation_to_ascii(rel),relation_to_ascii(rel2),relation_to_ascii(erg));
+				return 1;
+			}
+
+		}
+	}
+
+	return 0;
+}
+
+
 
 int main(void) {
+
 	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
 
 	printf("Loading data sets from files:\n");
@@ -397,18 +492,21 @@ int main(void) {
 	struct alan_web* web = new_web(file1_entry_count);
 	printf("Alan web of size %d created.\n",web->size);
 	init_web(web, All);
-	print_web(web,stdout,';');
+	//print_web(web,stdout,';');
 
 	process_group_dependence(web);
 	process_lecturer_dependence(web);
-	process_room_dependence(web);
-	process_dependencies(web);
+	//process_room_dependence(web);
+	//process_dependencies(web);
 
 	print_web(web,stdout,';');
 
-	char* rel = relation_to_ascii(get_relation(web,0,1));
-	printf("'%s'\n",rel);
-	free(rel);
+	if(process_check(web) != 0){
+		printf("Check was not successful!\n");
+	}
+	else{
+		printf("Check was successful!\n");
+	}
 
 	free_web(web);
 	return EXIT_SUCCESS;
