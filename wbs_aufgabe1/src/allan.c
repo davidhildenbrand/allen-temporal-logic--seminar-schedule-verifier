@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "alan.h"
+#include "allan.h"
 
-const alan_relation alan_table[REL_COUNT][REL_COUNT] = { { Aeq, Asm, Abi, Ad,
+const allan_relation allan_table[REL_COUNT][REL_COUNT] = { { Aeq, Asm, Abi, Ad,
 		Adi, Ao, Aoi, Am, Ami, As, Asi, Af, Afi }, { Asm, Asm, All, Asm | Ao
 		| Am | Ad | As, As, As, Asm | Ao | Am | Ad | As, As, Asm | Ao | Am | Ad
 		| As, As, As, Asm | Ao | Am | Ad | As, As }, { Abi, All, Abi, Abi | Aoi
@@ -38,8 +38,8 @@ const alan_relation alan_table[REL_COUNT][REL_COUNT] = { { Aeq, Asm, Abi, Ad,
 		| Afi }, { Afi, Asm, Abi | Aoi | Ami | Adi | Asi, Ao | Ad | As, Adi, Ao,
 		Aoi | Adi | Asi, Am, Aoi | Adi | Asi, Ao, Adi, Aeq | Af | Afi, Afi } };
 
-alan_relation reverse_relation(alan_relation source) {
-	alan_relation destination = 0x0;
+allan_relation reverse_allan_rel(allan_relation source) {
+	allan_relation destination = 0x0;
 
 	if (source & Aeq)
 		destination |= Aeq;
@@ -71,7 +71,7 @@ alan_relation reverse_relation(alan_relation source) {
 	return destination;
 }
 
-char* relation_to_ascii(alan_relation source) {
+char* allan_rel_to_ascii(allan_relation source) {
 	char buffer[128];
 	unsigned short pos = 0;
 
@@ -147,9 +147,9 @@ char* relation_to_ascii(alan_relation source) {
 	return copy;
 }
 
-alan_relation relation_from_ascii(char *source) {
+allan_relation allan_rel_from_ascii(char *source) {
 	int i;
-	alan_relation destination = 0;
+	allan_relation destination = 0;
 
 	if (source == NULL)
 		return 0;
@@ -202,20 +202,20 @@ alan_relation relation_from_ascii(char *source) {
 	return destination;
 }
 
-alan_relation conjunct_relations(alan_relation a, alan_relation b) {
+allan_relation conjunct_allan_rel(allan_relation a, allan_relation b) {
 	return a | b;
 }
 
-alan_relation substract_relation(alan_relation a, alan_relation b) {
+allan_relation substract_allan_rel(allan_relation a, allan_relation b) {
 	return a & (~b);
 }
 
-alan_relation intersect_relations(alan_relation a, alan_relation b) {
+allan_relation intersect_allan_rel(allan_relation a, allan_relation b) {
 	return a & b;
 }
 
-alan_relation P(alan_relation a, alan_relation b) {
-	alan_relation destination = 0x0, temp;
+allan_relation allan_p_function(allan_relation a, allan_relation b) {
+	allan_relation destination = 0x0, temp;
 	short i, j;
 
 	for (i = 0; i < REL_COUNT; a >>= 1, ++i) {
@@ -223,11 +223,71 @@ alan_relation P(alan_relation a, alan_relation b) {
 			temp = b;
 			for (j = 0; j < REL_COUNT; temp >>= 1, ++j) {
 				if (temp & 0x1) {
-					destination = conjunct_relations(destination,
-							alan_table[i][j]);
+					destination = conjunct_allan_rel(destination,
+							allan_table[i][j]);
 				}
 			}
 		}
+	}
+
+	return destination;
+}
+
+short check_allan_rel_consistency(allan_relation ab, allan_relation bc, allan_relation ac){
+	allan_relation calculated_ac = allan_p_function(ab,bc);
+
+	if(intersect_allan_rel(ac,calculated_ac) == 0)
+		return 1;
+	else
+		return 0;
+}
+
+allan_relation allan_rel_from_intervals(unsigned int starta, unsigned int stopa,
+		unsigned int startb, unsigned int stopb) {
+	allan_relation destination = 0;
+
+	if (starta > stopa) {
+		unsigned int temp = starta;
+		starta = stopa;
+		stopa = temp;
+	}
+	if (startb > stopb) {
+		unsigned int temp = startb;
+		startb = stopb;
+		stopb = temp;
+	}
+
+	if (starta == startb) {
+		if (stopa == stopb)
+			destination |= Aeq;
+		else if (stopa < stopb)
+			destination |= As;
+		else
+			destination |= Asi;
+	} else if (stopa == stopb) {
+		if (starta > startb)
+			destination |= Af;
+		else
+			destination |= Afi;
+
+	} else if (starta < startb) {
+		if (stopa < startb)
+			destination |= Asm;
+		else if (stopa == startb)
+			destination |= Am;
+		else if (stopa > stopb)
+			destination |= Adi;
+		else
+			destination |= Ao;
+	} else if (startb < starta) {
+		if (stopb < starta)
+			destination |= Abi;
+		else if (stopb == starta)
+			destination |= Ami;
+		else if (stopb > stopa)
+			destination |= Ad;
+		else
+			destination |= Aoi;
 	}
 
 	return destination;

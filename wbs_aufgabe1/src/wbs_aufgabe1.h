@@ -6,6 +6,9 @@
 #ifndef WBS_AUFGABE1_H_
 #define WBS_AUFGABE1_H_
 
+#include "allan.h"
+#include "allan_web.h"
+
 #define LECTURER_ENTRY_COUNT_MAX 20
 #define FILE1_ENTRY_COUNT_MAX 20
 #define FILE2_ENTRY_COUNT_MAX 20
@@ -61,14 +64,14 @@ short read_next(char* source, char*destination, unsigned short* offset);
 int read_file1();
 int read_file2();
 int read_file3();
-void process_group_dependence(struct alan_web* web);
-void process_lecturer_dependence(struct alan_web* web);
-void process_room_dependence(struct alan_web* web);
-unsigned short find_index_in_file1(unsigned short nr);
-void process_dependencies(struct alan_web* web);
-alan_relation intervals_to_alan(unsigned int starta, unsigned int stopa,
-		unsigned int startb, unsigned int stopb);
-short process_check(struct alan_web* web);
+void process_group_dependence(struct allan_web* web);
+void process_lecturer_dependence(struct allan_web* web);
+void process_room_dependence(struct allan_web* web);
+int get_index_by_nr(unsigned short nr);
+int get_nr_by_index(unsigned short nr);
+void process_dependencies(struct allan_web* web);
+
+short process_check(struct allan_web* web);
 void clear_file1();
 void clear_file2();
 void clear_file3();

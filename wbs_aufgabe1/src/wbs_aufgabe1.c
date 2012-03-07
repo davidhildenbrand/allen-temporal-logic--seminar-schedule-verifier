@@ -5,8 +5,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "alan.h"
-#include "alan_web.h"
+#include "allan.h"
+#include "allan_web.h"
 #include "wbs_aufgabe1.h"
 
 /*	global variables	*/
@@ -21,31 +21,24 @@ int main(void) {
 	file2.path =
 			"/Users/davidhildenbrand/Dropbox/DHBW/6. Semester/WBS/Aufgabe 1/A_017_2_Bsp.csv";
 	file3.path =
-			"/Users/davidhildenbrand/Dropbox/DHBW/6. Semester/WBS/Aufgabe 1/A_017_3p_Bsp.csv";
+			"/Users/davidhildenbrand/Dropbox/DHBW/6. Semester/WBS/Aufgabe 1/A_017_3p_Bsp2.csv";
 
 	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
 
-	printf("Loading data sets from files:\n");
+	printf("Loading data sets from file1 and file2:\n");
 
 	if (read_file1() != NULL) {
 		fprintf(stderr, "Error loading file: %s\n", file1.path);
-		exit(1);
+		goto error;
 	} else {
 		printf("\tfile1: %d data sets loaded.\n", file1.count);
 	}
 
 	if (read_file2() != NULL) {
 		fprintf(stderr, "Error loading file: %s\n", file2.path);
-		exit(2);
+		goto error;
 	} else {
 		printf("\tfile2: %d data sets loaded.\n", file2.count);
-	}
-
-	if (read_file3() != NULL) {
-		fprintf(stderr, "Error loading file: %s\n", file3.path);
-		exit(3);
-	} else {
-		printf("\tfile3: %d data sets loaded.\n", file3.count);
 	}
 
 	printf("The following lecturers have been identified:\n");
@@ -55,7 +48,7 @@ int main(void) {
 		printf("\tLecturer %d: %s\n", i, lecturer.elements[i]);
 	}
 
-	struct alan_web* web = new_web(file1.count);
+	struct allan_web* web = new_web(file1.count);
 
 	printf("Alan web of size %d created.\n", web->size);
 	init_web(web, All);
@@ -65,12 +58,35 @@ int main(void) {
 	process_room_dependence(web);
 	process_dependencies(web);
 
-	if (process_check(web) != 0) {
-		printf("Check was not successful!\n");
+	printf("Processed all dependencies.\n");
+
+	printf("Checking web consistency...\n");
+	if (check_consistency(web) != 0) {
+		printf("\tCheck was not successful!\n");
+		goto error;
 	} else {
-		printf("Check was successful!\n");
+		printf("\tCheck was successful!\n");
 	}
 
+	printf("Checking schedule from file3...\n");
+
+	if (read_file3() != NULL) {
+		fprintf(stderr, "Error loading file: %s\n", file3.path);
+		goto error;
+	} else {
+		printf("\tfile3: %d data sets loaded.\n", file3.count);
+	}
+
+	if (process_check(web) != 0) {
+		printf("\tCheck was not successful!\n");
+		goto error;
+	} else {
+		printf("\tCheck was successful!\n");
+	}
+
+	error:
+
+	printf("Quitting!\n");
 	clear_file1();
 	clear_file2();
 	clear_file3();
@@ -311,11 +327,11 @@ int read_file3() {
 	fclose(file);
 	return 0;
 }
-void process_group_dependence(struct alan_web* web) {
+void process_group_dependence(struct allan_web* web) {
 	//a group can only join one lecture at a time
 	int i, j;
 	//default is that they have a break in between
-	alan_relation relation = relation_from_ascii("< >");
+	allan_relation relation = allan_rel_from_ascii("< >");
 	//iterate entries in file 1
 	for (i = 0; i < file1.count; ++i) {
 		//iterate starting at the next position
@@ -336,10 +352,10 @@ void process_group_dependence(struct alan_web* web) {
 	}
 }
 
-void process_lecturer_dependence(struct alan_web* web) {
+void process_lecturer_dependence(struct allan_web* web) {
 	//same lecturers can't take part in a lecture at the same time
 	int i, j;
-	const alan_relation relation = relation_from_ascii("m mi < >");
+	const allan_relation relation = allan_rel_from_ascii("m mi < >");
 	//iterate entries in file 1
 	for (i = 0; i < file1.count; ++i) {
 		//iterate starting at the next position
@@ -352,10 +368,10 @@ void process_lecturer_dependence(struct alan_web* web) {
 	}
 }
 
-void process_room_dependence(struct alan_web* web) {
+void process_room_dependence(struct allan_web* web) {
 	//a room can only contain one group at the time
 	int i, j;
-	const alan_relation relation = relation_from_ascii("m mi < >");
+	const allan_relation relation = allan_rel_from_ascii("m mi < >");
 	//iterate entries in file 1
 	for (i = 0; i < file1.count; ++i) {
 		//iterate starting at the next position
@@ -368,7 +384,7 @@ void process_room_dependence(struct alan_web* web) {
 	}
 }
 
-unsigned short find_index_in_file1(unsigned short nr) {
+int get_index_by_nr(unsigned short nr) {
 	int i;
 	unsigned short fnr = -1;
 
@@ -384,110 +400,120 @@ unsigned short find_index_in_file1(unsigned short nr) {
 	return fnr;
 }
 
-void process_dependencies(struct alan_web* web) {
+int get_nr_by_index(unsigned short index) {
+	if(index >= file1.count){
+		return -1;
+	}
+
+	return file1.entries[index]->nr;
+}
+
+void process_dependencies(struct allan_web* web) {
 	//process the dependencies described in file 2
-	const alan_relation relation = relation_from_ascii("m <");
+	const allan_relation relation = allan_rel_from_ascii("m <");
 	struct file2_entry* cur = NULL;
 	int i;
 
 	for (i = 0; i < file2.count; ++i) {
 		cur = file2.entries[i];
 
-		unsigned short pre = find_index_in_file1(cur->pre);
-		unsigned short post = find_index_in_file1(cur->post);
+		unsigned short pre = get_index_by_nr(cur->pre);
+		unsigned short post = get_index_by_nr(cur->post);
 
 		intersect_relation(web, pre, post, relation);
 	}
 }
 
-alan_relation intervals_to_alan(unsigned int starta, unsigned int stopa,
-		unsigned int startb, unsigned int stopb) {
-	alan_relation destination = 0;
+short process_check(struct allan_web* web) {
+	if(web == NULL)
+		return -3;
 
-	if (starta > stopa) {
-		unsigned int temp = starta;
-		starta = stopa;
-		stopa = temp;
-	}
-	if (startb > stopb) {
-		unsigned int temp = startb;
-		startb = stopb;
-		stopb = temp;
-	}
+	int i, j,k;
 
-	if (starta == startb) {
-		if (stopa == stopb)
-			destination |= Aeq;
-		else if (stopa < stopb)
-			destination |= As;
-		else
-			destination |= Asi;
-	} else if (stopa == stopb) {
-		if (starta > startb)
-			destination |= Af;
-		else
-			destination |= Afi;
+	//to arrays for additional dependencies checking
+	char found[file1.count];
+    char required[file1.count];
+	for(i=0;i<file1.count;required[i]=0,found[i++]=0);
 
-	} else if (starta < startb) {
-		if (stopa < startb)
-			destination |= Asm;
-		else if (stopa == startb)
-			destination |= Am;
-		else if (stopa > stopb)
-			destination |= Adi;
-		else
-			destination |= Ao;
-	} else if (startb < starta) {
-		if (stopb < starta)
-			destination |= Abi;
-		else if (stopb == starta)
-			destination |= Ami;
-		else if (stopb > stopa)
-			destination |= Ad;
-		else
-			destination |= Aoi;
-	}
+    //variables used inside the loop
+	struct file3_entry* entrya = NULL;
+	struct file3_entry* entryb = NULL;
+	unsigned short indexa = -1;
+	unsigned short indexb = -1;
+	unsigned short starta = 0;
+	unsigned short startb = 0;
+	unsigned short stopa = 0;
+	unsigned short stopb = 0;
+	allan_relation rel = 0;
+	allan_relation rel2 = 0;
+	allan_relation erg = 0;
 
-	return destination;
-}
-
-short process_check(struct alan_web* web) {
-	int i, j;
-
+	//compare each pair of entries in file3
 	for (i = 0; i < file3.count; ++i) {
+		entrya = file3.entries[i];
+		indexa = get_index_by_nr(entrya->event);
+
+		//check if the event has already been placed
+		if(found[indexa] != 0){
+			printf("ERROR: Duplicate event in file3: %d!\n", entrya->event);
+			return -4;
+		}
+		found[indexa] = 1;
+		//find all events that the current event depends on.
+		for(k=0;k<file2.count;++k){
+			if(file2.entries[k]->post == entrya->event){
+				required[get_index_by_nr(file2.entries[k]->pre)] = 1;
+			}
+		}
+
+		if(indexa < 0){
+			printf("ERROR: Event %d was not defined in file1!\n", entrya->event);
+			return -2;
+		}
+		starta = entrya->time_in_minutes;
+		stopa = starta;
+
+		if (file1.entries[indexa]->length == 2)
+			stopa += 90;
+		else
+			stopa += 45;
+
 		for (j = i + 1; j < file3.count; ++j) {
-			struct file3_entry* entrya = file3.entries[i];
-			struct file3_entry* entryb = file3.entries[j];
+			entryb = file3.entries[j];
+			indexb = get_index_by_nr(entryb->event);
 
-			unsigned short indexa = find_index_in_file1(entrya->event);
-			unsigned short indexb = find_index_in_file1(entryb->event);
-			unsigned short starta = entrya->time_in_minutes;
-			unsigned short startb = entryb->time_in_minutes;
-			unsigned short stopa = starta;
-			unsigned short stopb = startb;
+			if(indexb < 0){
+				printf("ERROR: Event %d was not defined in file1!\n", entryb->event);
+				return -2;
+			}
 
-			if (file1.entries[indexa]->length == 2)
-				stopa += 90;
-			else
-				stopa += 45;
+			startb = entryb->time_in_minutes;
+			stopb = startb;
 
 			if (file1.entries[indexb]->length == 2)
 				stopb += 90;
 			else
 				stopb += 45;
 
-			alan_relation rel = intervals_to_alan(starta, stopa, startb, stopb);
-			alan_relation rel2 = get_relation(web, indexa, indexb);
-			alan_relation erg = intersect_relations(rel2, rel);
+			rel = allan_rel_from_intervals(starta, stopa, startb, stopb);
+			rel2 = get_relation(web, indexa, indexb);
+			erg = intersect_allan_rel(rel2, rel);
 
 			if (erg == 0) {
-				printf("Checking %d and %d.\n", entrya->event, entryb->event);
-				printf("Index %d and %d.\n", indexa, indexb);
-				printf("'%s' A '%s' = '%s'\n", relation_to_ascii(rel),
-						relation_to_ascii(rel2), relation_to_ascii(erg));
+				printf("ERROR: Detected incompatible events %d and %d.\n", entrya->event, entryb->event);
+				printf("Their relation is '%s', but only '%s' is allowed.\n", allan_rel_to_ascii(rel),
+						allan_rel_to_ascii(rel2), allan_rel_to_ascii(erg));
 				return 1;
 			}
 
+		}
+	}
+
+	//check that all required events have been found
+	for(i=0;i<file1.count;++i){
+		if(required[i] == 1 && found[i] == 0){
+			printf("ERROR: Required event %d was not defined in the schedule!\n", get_nr_by_index(i));
+			return -2;
 		}
 	}
 
