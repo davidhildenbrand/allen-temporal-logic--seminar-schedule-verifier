@@ -1,3 +1,8 @@
+/*
+ Name        : WBS Aufgabe 1
+ Author      : David hildenbrand, Tobias Schoknecht
+ */
+
 #ifndef _ALAN_H_
 #define _ALAN_H_
 
@@ -43,10 +48,9 @@ extern const alan_relation alan_table[REL_COUNT][REL_COUNT];
 
 char* relation_to_ascii(alan_relation source);
 alan_relation relation_from_ascii(char *source);
-alan_relation conjunct_relations(alan_relation a,alan_relation b);
-alan_relation substract_relation(alan_relation a,alan_relation b);
-alan_relation intersect_relations(alan_relation a,alan_relation b);
-alan_relation P(alan_relation a,alan_relation b);
-
+alan_relation conjunct_relations(alan_relation a, alan_relation b);
+alan_relation substract_relation(alan_relation a, alan_relation b);
+alan_relation intersect_relations(alan_relation a, alan_relation b);
+alan_relation P(alan_relation a, alan_relation b);
 
 #endif /*_ALAN_H_*/
