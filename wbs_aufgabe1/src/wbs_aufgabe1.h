@@ -68,7 +68,7 @@ void process_group_dependence(struct allan_web* web);
 void process_lecturer_dependence(struct allan_web* web);
 void process_room_dependence(struct allan_web* web);
 void process_dependencies(struct allan_web* web);
-
+short write_web_to_files(struct allan_web* web, char* path);
 short process_check(struct allan_web* web);
 void clear_file1();
 void clear_file2();

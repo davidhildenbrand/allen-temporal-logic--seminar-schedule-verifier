@@ -17,28 +17,33 @@ struct file2 file2;
 struct file3 file3;
 
 int main(int argc, char** argv) {
+	struct allan_web* web = NULL;
 	log(INFO, "Allan schedule verifier.");
 	log_filled_line('-');
 	log(INFO, "Copyright David Hildenbrand, Tobias Schoknecht - 2012.");
 	log_filled_line('-');
 
 	file1.path =
-			"/Users/davidhildenbrand/Dropbox/DHBW/6. Semester/WBS/Aufgabe 1/A_017_1_Bsp.csv";
+			"A_017_1_Bsp.csv";
 	file2.path =
-			"/Users/davidhildenbrand/Dropbox/DHBW/6. Semester/WBS/Aufgabe 1/A_017_2_Bsp.csv";
+			"A_017_2_Bsp.csv";
 	file3.path =
-			"/Users/davidhildenbrand/Dropbox/DHBW/6. Semester/WBS/Aufgabe 1/A_017_3p_Bsp.csv";
+			"A_017_3p_Bsp.csv";
+	char* out_file = "out.csv";
 
-	if (argc == 3){
-		file1.path = argv[2];
-		file2.path = argv[3];
-		file3.path = argv[4];
+	if (argc > 3){
+		file1.path = argv[1];
+		file2.path = argv[2];
+		file3.path = argv[3];
 	}
 	else{
 		log(WARN,"Loading files from default path!");
-		log(WARN,"Usage: <executable> <file1> <file2> <file3>");
+		log(WARN,"Usage: <executable> <file1> <file2> <file3> [<outfile>]");
 		log_filled_line('-');
 	}
+
+	if(argc > 4)
+		out_file = argv[4];
 
 	log(INFO, "file1: %s",file1.path);
 	log(INFO, "file2: %s",file2.path);
@@ -72,7 +77,7 @@ int main(int argc, char** argv) {
 
 	log_filled_line('-');
 
-	struct allan_web* web = new_web(file1.count);
+	web = new_web(file1.count);
 
 	log(INFO,"Allan web of size %d created.", web->size);
 	init_web(web, All);
@@ -113,6 +118,15 @@ int main(int argc, char** argv) {
 
 	log_filled_line('-');
 
+	log(INFO,"Saving web to file ...");
+
+	if(write_web_to_files(web,out_file) != 0)
+		log(ERROR,"... web could not be written to file.");
+	else
+		log(INFO," ... web written to file.");
+
+	log_filled_line('-');
+
 	log(INFO,"Verifying schedule from file3 ...");
 
 	if (read_file3() != NULL) {
@@ -141,6 +155,25 @@ int main(int argc, char** argv) {
 	clear_lecturer();
 	free_web(web);
 	return EXIT_SUCCESS;
+}
+
+short write_web_to_files(struct allan_web* web, char* path){
+	if(path == NULL){
+		return -1;
+	}
+
+	FILE* file = fopen(path,"w");
+
+	if(file == NULL){
+		log(ERROR,"File could not be opened.");
+		return -2;
+	}
+
+	print_web(web,file,';');
+
+	fclose(file);
+
+	return 0;
 }
 
 short find_lecturer(char* name) {
