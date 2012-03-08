@@ -7,9 +7,11 @@
 #include "allan.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "logger.h"
 
 struct allan_web* new_web(unsigned int size) {
-	struct allan_web* web = (struct allan_web*) malloc(sizeof(struct allan_web));
+	struct allan_web* web = (struct allan_web*) malloc(
+			sizeof(struct allan_web));
 	int i;
 
 	web->relations = malloc(size * sizeof(allan_relation *));
@@ -17,10 +19,10 @@ struct allan_web* new_web(unsigned int size) {
 		web->relations[i] = malloc(i * sizeof(allan_relation));
 	}
 
-	web->nodes_mapped = 0;
-	web->node_mapping = malloc(size * sizeof(void*));
+	web->node_mapping = malloc(size * sizeof(int));
+	//init the mapping of numbers to nodes to the default
 	for (i = 0; i < size; ++i) {
-		web->node_mapping[i] = NULL;
+		web->node_mapping[i] = -1;
 	}
 
 	web->size = size;
@@ -28,10 +30,10 @@ struct allan_web* new_web(unsigned int size) {
 	return web;
 }
 
-struct allan_web* init_web(struct allan_web* web, allan_relation relation) {
+void init_web(struct allan_web* web, allan_relation relation) {
 	int i, j;
 	if (web == NULL)
-		return NULL;
+		return;
 
 	for (i = 0; i < web->size; ++i) {
 		for (j = 0; j < i; ++j) {
@@ -39,7 +41,84 @@ struct allan_web* init_web(struct allan_web* web, allan_relation relation) {
 		}
 	}
 
-	return NULL;
+	return;
+}
+
+int get_mapped_nr(struct allan_web* web, unsigned short index) {
+	if (web == NULL)
+		return -3;
+
+	if (index >= web->size)
+		return -1;
+
+	int nr = web->node_mapping[index];
+	//as a default the mapping will be the index
+	if (nr == -1)
+		nr = index;
+	return nr;
+}
+
+int get_mapped_index(struct allan_web* web, unsigned short nr) {
+	if (web == NULL)
+		return -3;
+
+	unsigned short i;
+	//index does not exist
+	if (index < web->size)
+		return -1;
+
+	//find the mapped value
+	for (i = 0; i < web->size; ++i) {
+		if (web->node_mapping[i] == nr)
+			return i;
+	}
+
+	//value not mapped?
+	return -2;
+}
+
+short map_nr_to_index(struct allan_web* web, unsigned short nr,
+		unsigned short index) {
+	if (web == NULL)
+		return -3;
+
+	int old_index = -1;
+	//index does not exist
+	if (index >= web->size)
+		return -1;
+
+	if (web->node_mapping[index] != -1)
+		log(WARN,"Overwriting existing mapping of index %d.", index);
+
+	if (old_index = get_mapped_index(web, nr) >= 0) {
+		log(ERROR,"Nr %d already mapped to index %d.", nr, old_index);
+		return -2;
+	}
+
+	web->node_mapping[index] = nr;
+
+	return 0;
+}
+
+void remove_mapping(struct allan_web* web, unsigned short index) {
+	if (web == NULL)
+		return;
+
+	if (index >= web->size)
+		return;
+
+	web->node_mapping[index] = -1;
+}
+
+void clear_mapping(struct allan_web* web) {
+	int i;
+
+	if (web == NULL)
+		return;
+
+	for (i = 0; i < web->size; ++i) {
+		web->node_mapping[i] = -1;
+	}
 }
 
 struct allan_web* free_web(struct allan_web* web) {
@@ -55,49 +134,6 @@ struct allan_web* free_web(struct allan_web* web) {
 	free(web);
 
 	return NULL;
-}
-
-int add_mapping(struct allan_web* web, void* element) {
-	int i;
-	if (web->nodes_mapped == web->size || element == NULL || web == NULL)
-		return -1;
-
-	for (i = 0; i < web->size; ++i) {
-		if (web->node_mapping[i] == NULL) {
-			web->node_mapping[i] = element;
-			web->nodes_mapped++;
-			return i;
-		}
-	}
-
-	return -2;
-}
-
-void remove_mapping(struct allan_web* web, void* element) {
-	int i;
-	if (element == NULL || web == NULL)
-		return;
-
-	for (i = 0; i < web->size; ++i) {
-		if (web->node_mapping[i] == element) {
-			web->node_mapping[i] = NULL;
-			web->nodes_mapped--;
-		}
-	}
-}
-
-int get_mapped_index(struct allan_web* web, void* element) {
-	if (element == NULL || web == NULL)
-		return -1;
-
-	int i;
-
-	for (i = 0; i < web->nodes_mapped; ++i) {
-		if (web->node_mapping[i] == element)
-			return i;
-	}
-
-	return -1;
 }
 
 allan_relation get_relation(struct allan_web* web, int a, int b) {
@@ -121,11 +157,6 @@ allan_relation intersect_relation(struct allan_web* web, int a, int b,
 		return 0;
 	}
 
-	////
-	if (a == 1 && b == 6) {
-		printf("Intersecting with: %s\n", allan_rel_to_ascii(rel));
-	}
-	////
 	if (a < b) {
 		web->relations[b][a] = intersect_allan_rel(reverse_allan_rel(rel),
 				web->relations[b][a]);
@@ -154,89 +185,102 @@ allan_relation conjunct_relation(struct allan_web* web, int a, int b,
 	}
 }
 
-void set_relation(struct allan_web* web, int a, int b, allan_relation rel) {
-	if (web == NULL)
-		return;
-	if (a == b || a < 0 || a >= web->size || b < 0 || b >= web->size) {
-		return;
-	}
-
-	if (a < b)
-		web->relations[b][a] = reverse_allan_rel(rel);
-	else
-		web->relations[a][b] = rel;
-}
-
-allan_relation get_relation_by_mapping(struct allan_web* web, void* x, void* y) {
-	if (web == NULL)
-		return 0;
-	int a = get_mapped_index(web, x);
-	int b = get_mapped_index(web, y);
-
-	return (get_relation(web, a, b));
-}
-
-void set_relation_by_mapping(struct allan_web* web, void* x, void* y,
-		allan_relation rel) {
-	if (web == NULL)
-		return;
-
-	int a = get_mapped_index(web, x);
-	int b = get_mapped_index(web, y);
-
-	set_relation(web, a, b, rel);
-}
-
 void print_web(struct allan_web* web, FILE* file, char delimiter) {
 	int i, j;
 	if (file == NULL)
 		return;
 
-	for (i = 0; i < web->size; ++i) {
-		for (j = 0; j < i; ++j) {
-			char* rel = allan_rel_to_ascii(web->relations[i][j]);
-			fprintf(file, "%s", rel);
-			fflush(stdout);
-			free(rel);
+	fprintf(file, "%c", delimiter);
 
-			if (j + 1 < i)
-				fprintf(file, "%c", delimiter);
+	for (i = 0; i < web->size; i++) {
+		fprintf(file, "%d", get_mapped_nr(web, i));
+		fprintf(file, "%c", delimiter);
+	}
+	fprintf(file, "\n");
+
+	for (i = 0; i < web->size; ++i) {
+		fprintf(file, "%d%c", i + 1, delimiter);
+		for (j = 0; j < web->size; ++j) {
+			if (j < i) {
+				char* rel = allan_rel_to_ascii(web->relations[i][j]);
+				fprintf(file, "%s", rel);
+				free(rel);
+			}
+			fprintf(file, "%c", delimiter);
 		}
 		fprintf(file, "\n");
 	}
+	fflush(file);
 }
 
-short check_tripple_consistency(struct allan_web* web, unsigned int a, unsigned int b, unsigned int c){
-	allan_relation ab = get_relation(web,a,b);
-	allan_relation bc = get_relation(web,b,c);
-	allan_relation ac = get_relation(web,a,c);
+short check_tripple_consistency(struct allan_web* web, unsigned int a,
+		unsigned int b, unsigned int c) {
+	allan_relation ab = get_relation(web, a, b);
+	allan_relation bc = get_relation(web, b, c);
+	allan_relation ac = get_relation(web, a, c);
 
-	if(check_allan_rel_consistency(ab,bc,ac) != 0){
-		printf("ERROR: Consistency check of %d,%d and %d failed!\n",a,b,c);
+	if (check_allan_rel_consistency(ab, bc, ac) != 0) {
+		log(ERROR,"Consistency check of %d,%d and %d failed!", a, b, c);
 		return 1;
-	}
-	else
+	} else
 		return 0;
 }
 
-short check_consistency(struct allan_web* web){
-	if(web == NULL)
+short path_consistency_method_tripple(struct allan_web* web, unsigned int a,
+		unsigned int b, unsigned int c) {
+	allan_relation ab = get_relation(web, a, b);
+	allan_relation bc = get_relation(web, b, c);
+	allan_relation ac = get_relation(web, a, c);
+
+	//calculate the ac
+	allan_relation cal_ac = allan_p_function(ab, bc);
+
+	//intersect the calculated one with the existing one
+	allan_relation new_ac = intersect_relation(web, a, c, cal_ac);
+
+	//error in the web
+	if (new_ac == 0) {
+		log(ERROR,"Consistency check of %d,%d and %d failed!",
+				get_mapped_nr(web, a), get_mapped_nr(web, b),
+				get_mapped_nr(web, c));
+		return -1;
+	}
+	//nothing changed
+	else if (new_ac == ac)
+		return 0;
+	//value changed
+	else {
+		return 1;
+	}
+}
+
+short path_consistency_method(struct allan_web* web) {
+	if (web == NULL)
 		return -1;
 
-	if(web->size < 3){
-			printf("ERROR: Size of web is smaller than 3. Checking consistency can't be performed!\n");
-			return -2;
-	}
-	else if(web->size > 3){
-		printf("WARNING: Size of web is bigger than 3. Checking local consistencies only!\n");
+	if (web->size < 3) {
+		log(ERROR,"Size of web is smaller than 3. Cannot check consistency!");
+		return -2;
+	} else if (web->size > 3) {
+		log(WARN,"Size of web is bigger than 3. Web might be path-consistent but incomplete and unsatisfiable!");
 	}
 
-	int i,j,k;
-	for(i=0;i<web->size;++i){
-		for(j=i+1;j<web->size;++j){
-			for(k=j+1;k<web->size;++k){
-				if(check_tripple_consistency(web, i,j,k) != 0)
-					return 1;
+	int i, j, k;
+	short change = 1;
+
+	//perform the path method while we have a change
+	while (change == 1) {
+		change = 0;
+		//iterate all edges
+		for (i = 0; i < web->size; ++i) {
+			for (j = i + 1; j < web->size; ++j) {
+				for (k = j + 1; k < web->size; ++k) {
+					short ret = path_consistency_method_tripple(web, i, j, k);
+					if (ret == 1)
+						change = 1;
+					if (ret == -1)
+						return 1;
+				}
 			}
 		}
 	}

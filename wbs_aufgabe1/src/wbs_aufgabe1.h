@@ -67,8 +67,6 @@ int read_file3();
 void process_group_dependence(struct allan_web* web);
 void process_lecturer_dependence(struct allan_web* web);
 void process_room_dependence(struct allan_web* web);
-int get_index_by_nr(unsigned short nr);
-int get_nr_by_index(unsigned short nr);
 void process_dependencies(struct allan_web* web);
 
 short process_check(struct allan_web* web);
