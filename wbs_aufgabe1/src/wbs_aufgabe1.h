@@ -69,9 +69,13 @@ void process_lecturer_dependence(struct allan_web* web);
 void process_room_dependence(struct allan_web* web);
 void process_dependencies(struct allan_web* web);
 short write_web_to_files(struct allan_web* web, char* path);
-short process_check(struct allan_web* web);
+short process_basic_checks(struct allan_web* web);
+short process_90min_break_check(struct allan_web* web);
 void clear_file1();
 void clear_file2();
 void clear_file3();
+int find_index_by_nr_in_file1(int nr);
+int count_char(char* string, char element);
+unsigned short time_in_min_from_string(char* string);
 
 #endif /* WBS_AUFGABE1_H_ */

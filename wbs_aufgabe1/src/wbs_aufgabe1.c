@@ -17,69 +17,68 @@ struct file2 file2;
 struct file3 file3;
 
 int main(int argc, char** argv) {
+	int error = EXIT_SUCCESS;
 	struct allan_web* web = NULL;
+
 	log(INFO, "Allan schedule verifier.");
 	log_filled_line('-');
 	log(INFO, "Copyright David Hildenbrand, Tobias Schoknecht - 2012.");
 	log_filled_line('-');
 
-	file1.path =
-			"A_017_1_Bsp.csv";
-	file2.path =
-			"A_017_2_Bsp.csv";
-	file3.path =
-			"A_017_3p_Bsp.csv";
+	file1.path = "A_017_1_Bsp.csv";
+	file2.path = "A_017_2_Bsp.csv";
+	file3.path = "A_017_3p_Bsp.csv";
 	char* out_file = "out.csv";
 
-	if (argc > 3){
+	if (argc > 3) {
 		file1.path = argv[1];
 		file2.path = argv[2];
 		file3.path = argv[3];
-	}
-	else{
-		log(WARN,"Loading files from default path!");
-		log(WARN,"Usage: <executable> <file1> <file2> <file3> [<outfile>]");
+	} else {
+		log(WARN, "Loading files from default path!");
+		log(WARN, "Usage: <executable> <file1> <file2> <file3> [<outfile>]");
 		log_filled_line('-');
 	}
 
-	if(argc > 4)
+	if (argc > 4)
 		out_file = argv[4];
 
-	log(INFO, "file1: %s",file1.path);
-	log(INFO, "file2: %s",file2.path);
-	log(INFO, "file3: %s",file3.path);
+	log(INFO, "file1: %s", file1.path);
+	log(INFO, "file2: %s", file2.path);
+	log(INFO, "file3: %s", file3.path);
 
 	log_filled_line('-');
 
 	log(INFO, "Loading data sets from file1 and file2 ...");
 
-	if (read_file1() != NULL) {
+	if (read_file1() != 0) {
 		log(ERROR, "Error loading file: %s", file1.path);
+		error = 1;
 		goto error;
 	} else
 		log(INFO, "... %d data sets loaded from file1.", file1.count);
 
-	if (read_file2() != NULL) {
+	if (read_file2() != 0) {
 		log(ERROR, "Error loading file: %s", file2.path);
+		error = 1;
 		goto error;
 	} else
 		log(INFO, "... %2d data sets loaded from file2.", file2.count);
 
 	log_filled_line('-');
 
-
-	log(INFO,"The following distinct lecturers have been identified:");
+	log(INFO, "The following distinct lecturers have been identified:");
 
 	int i;
 	for (i = 0; i < lecturer.count; ++i) {
-		log(INFO,"\tLecturer %d: %s", i+1, lecturer.elements[i]);
+		log(INFO, "\tLecturer %d: %s", i + 1, lecturer.elements[i]);
 	}
 
 	log_filled_line('-');
 
 	web = new_web(file1.count);
 
-	log(INFO,"Allan web of size %d created.", web->size);
+	log(INFO, "Allan web of size %d created.", web->size);
 	init_web(web, All);
 
 	log_filled_line('-');
@@ -89,87 +88,110 @@ int main(int argc, char** argv) {
 		map_nr_to_index(web, file1.entries[i]->nr, i);
 	}
 
-	log(INFO,"Adding dependencies to the web...");
+	log(INFO, "Adding dependencies to the web...");
 
-	log(INFO,"... between events of the same group.");
+	log(INFO, "... between events of the same group.");
 	process_group_dependence(web);
 
-	log(INFO,"... between events of the lecturer.");
+	log(INFO, "... between events of the lecturer.");
 	process_lecturer_dependence(web);
 
-	log(INFO,"... between events in the same room.");
+	log(INFO, "... between events in the same room.");
 	process_room_dependence(web);
 
-	log(INFO,"... between events defined in file2.");
+	log(INFO, "... between events defined in file2.");
 	process_dependencies(web);
 
-	log(INFO,"All dependencies processed.");
+	log(INFO, "All dependencies processed.");
 
 	log_filled_line('-');
 
-	log(INFO,"Checking web consistency (path consistency method) ...");
+	log(INFO, "Checking web consistency (path consistency method) ...");
 
 	if (path_consistency_method(web) != 0) {
-		log(ERROR,"Check was not successful!");
+		log(ERROR, "Check was not successful!");
+		error = 2;
 		goto error;
 	} else {
-		log(INFO,"Check was successful!");
+		log(INFO, "Check was successful!");
 	}
 
 	log_filled_line('-');
 
-	log(INFO,"Saving web to file ...");
+	log(INFO, "Saving web to file ...");
 
-	if(write_web_to_files(web,out_file) != 0)
-		log(ERROR,"... web could not be written to file.");
+	if (write_web_to_files(web, out_file) != 0)
+		log(ERROR, "... web could not be written to file.");
 	else
-		log(INFO," ... web written to file.");
+		log(INFO, " ... web written to file.");
 
 	log_filled_line('-');
 
-	log(INFO,"Verifying schedule from file3 ...");
+	log(INFO, "Verifying schedule from file3 ...");
 
-	if (read_file3() != NULL) {
-		log(ERROR,"Error loading file: %s", file3.path);
+	if (read_file3() != 0) {
+		log(ERROR, "Error loading file: %s", file3.path);
+		error = 1;
 		goto error;
 	} else {
-		log(INFO,"... %2d data sets loaded from file3.", file3.count);
+		log(INFO, "... %2d data sets loaded from file3.", file3.count);
 	}
 
-	log(INFO,"... running checks ...");
+	log(INFO, "... running basic consistency checks");
 
-	if (process_check(web) != 0) {
-		log(ERROR,"Check was not successful!");
+	if (process_basic_checks(web) != 0) {
+		log(ERROR, "Check was not successful!");
+		error = 3;
 		goto error;
 	} else {
-		log(INFO,"Check was successful!");
+		log(INFO, "Check was successful!");
+	}
+
+	log(INFO, "... running advanced '90min break' check");
+
+	if (process_90min_break_check(web) != 0) {
+		log(ERROR, "Check was not successful!");
+		error = 4;
+		goto error;
+	} else {
+		log(INFO, "Check was successful!");
+	}
+
+	log(INFO, "... final web consistency check (path consistency method)");
+
+	if (path_consistency_method(web) != 0) {
+		log(ERROR, "Check was not successful!");
+		error = 5;
+		goto error;
+	} else {
+		log(INFO, "Check was successful!");
 	}
 
 	error:
 
 	log_filled_line('-');
-	log(INFO,"Quitting!");
+	log(INFO, "Quitting!");
 	clear_file1();
 	clear_file2();
 	clear_file3();
 	clear_lecturer();
 	free_web(web);
-	return EXIT_SUCCESS;
+	return error;
 }
 
-short write_web_to_files(struct allan_web* web, char* path){
-	if(path == NULL){
+short write_web_to_files(struct allan_web* web, char* path) {
+	if (path == NULL) {
 		return -1;
 	}
 
-	FILE* file = fopen(path,"w");
+	FILE* file = fopen(path, "w");
 
-	if(file == NULL){
-		log(ERROR,"File could not be opened.");
+	if (file == NULL) {
+		log(ERROR, "File could not be opened.");
 		return -2;
 	}
 
-	print_web(web,file,';');
+	print_web(web, file, ';');
 
 	fclose(file);
 
@@ -196,7 +218,7 @@ short add_lecturer(char* name) {
 	if (name == NULL)
 		return -1;
 	if (lecturer.count + 1 == LECTURER_ENTRY_COUNT_MAX) {
-		log(ERROR,"Too many lecturer used. Max is set to %d.",
+		log(ERROR, "Too many lecturer used. Max is set to %d.",
 				LECTURER_ENTRY_COUNT_MAX);
 		exit(-1);
 	}
@@ -241,33 +263,47 @@ short read_next(char* source, char*destination, unsigned short* offset) {
 
 int read_file1() {
 	FILE* file = NULL;
+	int error = EXIT_SUCCESS;
+	struct file1_entry* new_entry = NULL;
+	char buffer[128];
 
 	if (file1.path == NULL) {
-		return -1;
+		error = -1;
+		goto error;
 	}
 
 	file = fopen(file1.path, "r");
 
 	if (file == NULL) {
-		return -2;
+		error = -2;
+		goto error;
 	}
-
-	char buffer[128];
 
 	//table description
 	if (fgets(buffer, sizeof(buffer), file) == NULL) {
-		fclose(file);
-		return -3;
+		log(ERROR, "file1 has wrong/no content.");
+		error = -3;
+		goto error;
 	}
 
 	//process the records
 	while (fgets(buffer, sizeof(buffer), file) != NULL) {
 		if (file1.count + 1 == FILE1_ENTRY_COUNT_MAX) {
-			fclose(file);
-			return -3;
+			log(ERROR, "Sorry, maximum of entries for file1 is %d!",
+					FILE1_ENTRY_COUNT_MAX);
+			error = -3;
+			goto error;
 		}
-		struct file1_entry* new_entry = (struct file1_entry*) malloc(
-				sizeof(struct file1_entry));
+
+		//Min of delimiters needed
+		if (count_char(buffer, ';') < 5) {
+			log(ERROR, "6 columns are required in file1!",
+					FILE1_ENTRY_COUNT_MAX);
+			error = -6;
+			goto error;
+		}
+
+		new_entry = (struct file1_entry*) malloc(sizeof(struct file1_entry));
 
 		char temp[128];
 		unsigned short offset = 0;
@@ -275,13 +311,19 @@ int read_file1() {
 		//read the nr
 		read_next(buffer, temp, &offset);
 		new_entry->nr = atoi(temp);
+		//existing entry?
+		if (find_index_by_nr_in_file1(new_entry->nr) >= 0) {
+			log(ERROR, "Duplicate use of event nr %d in file1.", new_entry->nr);
+			error = -5;
+			goto error;
+		}
 
 		//read the name
 		read_next(buffer, temp, &offset);
 		new_entry->name = (char*) malloc(strlen(temp) * sizeof(char));
 		strcpy(&new_entry->name, temp);
 
-		//read the dozent
+		//read the lecturer
 		read_next(buffer, temp, &offset);
 		int index = find_lecturer(temp);
 		if (index >= 0)
@@ -289,130 +331,205 @@ int read_file1() {
 		else
 			new_entry->lecturer = add_lecturer(temp);
 
-		//read the gruppe
+		//read the group
 		read_next(buffer, temp, &offset);
 		new_entry->group = atoi(temp);
 
-		//read the länge
+		//read the length
 		read_next(buffer, temp, &offset);
 		new_entry->length = atoi(temp);
+		//either 1 or 2, 45 or 90, other values are not allowed!
+		switch (new_entry->length) {
+		case 1:
+		case 2:
+		case 45:
+			new_entry->length = 1;
+			break;
+		case 90:
+			new_entry->length = 2;
+			break;
+		default:
+			log(ERROR, "Length of event %d is not allowed in file1.",
+					new_entry->nr);
+			error = -4;
+			goto error;
+		}
 
-		//read the raum
+		//read the room
 		read_next(buffer, temp, &offset);
 		new_entry->room = atoi(temp);
 
+		//add it to our structure
 		file1.entries[file1.count++] = new_entry;
+		//important to set it to null!
+		new_entry = NULL;
 	}
 
-	fclose(file);
-
-	return 0;
+	error: if (new_entry != NULL)
+		free(new_entry);
+	if (file != NULL)
+		fclose(file);
+	return error;
 }
 
 int read_file2() {
 	FILE* file = NULL;
+	int error = EXIT_SUCCESS;
+	char buffer[128];
+	struct file2_entry* new_entry = NULL;
 
 	file = fopen(file2.path, "r");
 
 	if (file == NULL) {
-		return -1;
+		error = -1;
+		goto error;
 	}
-
-	char buffer[128];
 
 	//table description
 	if (fgets(buffer, sizeof(buffer), file) == NULL) {
-		fclose(file);
-		return -2;
+		log(ERROR, "file2 has wrong/no content.");
+		error = -2;
+		goto error;
 	}
 
 	//process the records
 	while (fgets(buffer, sizeof(buffer), file) != NULL) {
 		if (file2.count + 1 == FILE2_ENTRY_COUNT_MAX) {
-			fclose(file);
-			return -3;
+			log(ERROR, "Sorry, maximum of entries for file2 is %d!",
+					FILE2_ENTRY_COUNT_MAX);
+			error = -3;
+			goto error;
 		}
-		struct file2_entry* new_entry = (struct file2_entry*) malloc(
-				sizeof(struct file1_entry));
+
+		//Min of delimiters needed
+		if (count_char(buffer, ';') < 1) {
+			log(ERROR, "2 columns are required in file2!",
+					FILE1_ENTRY_COUNT_MAX);
+			error = -4;
+			goto error;
+		}
+
+		new_entry = (struct file2_entry*) malloc(sizeof(struct file1_entry));
 
 		char temp[128];
 		unsigned short offset = 0;
 
-		//read the vorher
+		//read the pre-event
 		read_next(buffer, temp, &offset);
 		new_entry->pre = atoi(temp);
+		//existing entry?
+		if (find_index_by_nr_in_file1(new_entry->pre) < 0) {
+			log(ERROR, "Event nr %d not referenced in file1!", new_entry->pre);
+			error = -5;
+			goto error;
+		}
 
-		//read the aufbauend
+		//read the post-event
 		read_next(buffer, temp, &offset);
 		new_entry->post = atoi(temp);
+		//existing entry?
+		if (find_index_by_nr_in_file1(new_entry->post) < 0) {
+			log(ERROR, "Event nr %d not referenced in file1!", new_entry->post);
+			error = -5;
+			goto error;
+		}
 
 		file2.entries[file2.count++] = new_entry;
+		new_entry = NULL;
 	}
 
-	fclose(file);
-
-	return 0;
+	error: if (new_entry != NULL)
+		free(new_entry);
+	if (file != NULL)
+		fclose(file);
+	return error;
 }
 
 int read_file3() {
 	FILE* file = NULL;
+	int error = 0;
+	char buffer[128];
+	struct file3_entry* new_entry = NULL;
 
 	file = fopen(file3.path, "r");
 
 	if (file == NULL) {
-		return -1;
+		error = -1;
+		goto error;
 	}
-
-	char buffer[128];
 
 	//table description
 	if (fgets(buffer, sizeof(buffer), file) == NULL) {
-		fclose(file);
-		return -2;
+		log(ERROR, "file3 has wrong/no content.");
+		error = -2;
+		goto error;
 	}
 
 	//process the records
 	while (fgets(buffer, sizeof(buffer), file) != NULL) {
 		if (file3.count + 1 == FILE3_ENTRY_COUNT_MAX) {
-			fclose(file);
-			return -3;
+			log(ERROR, "Sorry, maximum of entries for file2 is %d!",
+					FILE3_ENTRY_COUNT_MAX);
+			error = -3;
+			goto error;
 		}
-		struct file3_entry* new_entry = (struct file3_entry*) malloc(
-				sizeof(struct file1_entry));
+
+		//Min of delimiters needed
+		if (count_char(buffer, ';') < 2) {
+			log(ERROR, "3 columns are required in file3!",
+					FILE1_ENTRY_COUNT_MAX);
+			error = -4;
+			goto error;
+		}
+
+		new_entry = (struct file3_entry*) malloc(sizeof(struct file1_entry));
 
 		char temp[128];
 		unsigned short offset = 0;
 
-		//read the gruppe
+		//read the group
 		read_next(buffer, temp, &offset);
 		new_entry->group = atoi(temp);
 
-		//read the veranstaltung
+		//read the event nr
 		read_next(buffer, temp, &offset);
 		new_entry->event = atoi(temp);
+		//verify the referenced event nr
+		int file1_index = find_index_by_nr_in_file1(new_entry->event);
+		if (file1_index < 0) {
+			log(ERROR, "Event nr %d not referenced in file1!",
+					new_entry->event);
+			error = -5;
+			goto error;
+		}
+		//verify the group
+		if (file1.entries[file1_index]->group != new_entry->group) {
+			log(WARN, "Event nr %d has wrong group-entry in file3 (not used)!",
+					new_entry->event);
+		}
 
-		//read the zeit
+		//read the time
 		read_next(buffer, temp, &offset);
 
-		char time[3];
-		time[0] = temp[0];
-		time[1] = temp[1];
-		time[2] = '\0';
-		new_entry->time_in_minutes = atoi(time) * 60;
-		time[0] = temp[3];
-		time[1] = temp[4];
-		new_entry->time_in_minutes += atoi(time);
+		new_entry->time_in_minutes = time_in_min_from_string(temp);
 
 		file3.entries[file3.count++] = new_entry;
+		new_entry = NULL;
 	}
-	fclose(file);
-	return 0;
+
+	error: if (new_entry != NULL)
+		free(new_entry);
+	if (file != NULL)
+		fclose(file);
+	return error;
 }
 void process_group_dependence(struct allan_web* web) {
 	//a group can only join one lecture at a time
 	int i, j;
 	//default is that they have a break in between
 	allan_relation relation = allan_rel_from_ascii("< >");
+
+	//process all combinations of file1 entries
 	//iterate entries in file 1
 	for (i = 0; i < file1.count; ++i) {
 		//iterate starting at the next position
@@ -434,9 +551,11 @@ void process_group_dependence(struct allan_web* web) {
 }
 
 void process_lecturer_dependence(struct allan_web* web) {
-	//same lecturers can't take part in a lecture at the same time
+	//same lecturer can't take part in two lectures at the same time
 	int i, j;
 	const allan_relation relation = allan_rel_from_ascii("m mi < >");
+
+	//process all combinations of file1
 	//iterate entries in file 1
 	for (i = 0; i < file1.count; ++i) {
 		//iterate starting at the next position
@@ -453,6 +572,8 @@ void process_room_dependence(struct allan_web* web) {
 	//a room can only contain one group at the time
 	int i, j;
 	const allan_relation relation = allan_rel_from_ascii("m mi < >");
+
+	//process all combinations of file1
 	//iterate entries in file 1
 	for (i = 0; i < file1.count; ++i) {
 		//iterate starting at the next position
@@ -471,17 +592,19 @@ void process_dependencies(struct allan_web* web) {
 	struct file2_entry* cur = NULL;
 	int i;
 
+	//process each entry in file2
 	for (i = 0; i < file2.count; ++i) {
 		cur = file2.entries[i];
 
 		unsigned short pre = get_mapped_index(web, cur->pre);
 		unsigned short post = get_mapped_index(web, cur->post);
 
+		//enforce the "m <" relation
 		intersect_relation(web, pre, post, relation);
 	}
 }
 
-short process_check(struct allan_web* web) {
+short process_basic_checks(struct allan_web* web) {
 	if (web == NULL)
 		return -3;
 
@@ -496,8 +619,8 @@ short process_check(struct allan_web* web) {
 	//variables used inside the loop
 	struct file3_entry* entrya = NULL;
 	struct file3_entry* entryb = NULL;
-	unsigned short indexa = -1;
-	unsigned short indexb = -1;
+	int indexa = -1;
+	int indexb = -1;
 	unsigned short starta = 0;
 	unsigned short startb = 0;
 	unsigned short stopa = 0;
@@ -513,56 +636,57 @@ short process_check(struct allan_web* web) {
 
 		//check if the event has already been placed
 		if (found[indexa] != 0) {
-			log(ERROR,"Duplicate event in file3: %d!", entrya->event);
+			log(ERROR, "Duplicate event in file3: %d!", entrya->event);
 			return -4;
 		}
+		//mark it as found
 		found[indexa] = 1;
 		//find all events that the current event depends on.
 		for (k = 0; k < file2.count; ++k) {
 			if (file2.entries[k]->post == entrya->event) {
+				//mark it as required
 				required[get_mapped_index(web, file2.entries[k]->pre)] = 1;
 			}
 		}
 
 		if (indexa < 0) {
-			log(ERROR,"Event %d was not defined in file1!",
-					entrya->event);
+			log(ERROR, "Event %d was not defined in file1!", entrya->event);
 			return -2;
 		}
 		starta = entrya->time_in_minutes;
 		stopa = starta;
 
+		//determine the end time of the event
 		if (file1.entries[indexa]->length == 2)
 			stopa += 90;
 		else
 			stopa += 45;
 
+		//iterate starting after the current entry in file3
 		for (j = i + 1; j < file3.count; ++j) {
 			entryb = file3.entries[j];
 			indexb = get_mapped_index(web, entryb->event);
 
-			if (indexb < 0) {
-				log(ERROR,"Event %d was not defined in file1!",
-						entryb->event);
-				return -2;
-			}
-
 			startb = entryb->time_in_minutes;
 			stopb = startb;
 
+			//determine the end time of second event
 			if (file1.entries[indexb]->length == 2)
 				stopb += 90;
 			else
 				stopb += 45;
 
+			//find out the relation of both events
 			rel = allan_rel_from_intervals(starta, stopa, startb, stopb);
+			//intersect the current relation with their real relation described in file3
 			rel2 = get_relation(web, indexa, indexb);
-			erg = intersect_allan_rel(rel2, rel);
+			erg = intersect_relation(web, indexa, indexb, rel);
 
+			//if the intersect is NIL we have a problem
 			if (erg == 0) {
-				log(ERROR,"Detected incompatible events %d and %d.",
+				log(ERROR, "Detected incompatible events %d and %d.",
 						entrya->event, entryb->event);
-				log(ERROR,"Their relation is '%s', but only '%s' is allowed.",
+				log(ERROR, "Their relation is '%s', but only '%s' is allowed.",
 						allan_rel_to_ascii(rel), allan_rel_to_ascii(rel2),
 						allan_rel_to_ascii(erg));
 				return 1;
@@ -573,13 +697,57 @@ short process_check(struct allan_web* web) {
 
 	//check if all required events have been found
 	for (i = 0; i < file1.count; ++i) {
+		//event required but not found
 		if (required[i] == 1 && found[i] == 0) {
-			log(ERROR,"Required event %d was not defined in the schedule!",
+			log(ERROR, "Required event %d was not defined in the schedule!",
 					get_mapped_nr(web, i));
 			return -2;
 		}
+		else if(found[i] == 0){
+			log(WARN, "Event %d was not defined in the schedule but is not needed!",get_mapped_nr(web, i));
+		}
 	}
 
+	return 0;
+}
+
+short process_90min_break_check(struct allan_web* web) {
+	if (web == NULL)
+		return -3;
+	int i, j, k;
+
+	allan_relation refrel = allan_rel_from_ascii("<");
+
+	//process all edges
+	for (i = 0; i < web->size; ++i) {
+		for (j = 0; j < web->size; ++j) {
+
+			//find "m" relations only. "mi" is processed when iterating over the reverse edge
+			if (get_relation(web, i, j) == Am) {
+				//j only allows connection to other nodes of type "<"
+				//process all edges of j
+				for (k = 0; k < web->size; ++k) {
+					unsigned short group1 = file1.entries[j]->group;
+					unsigned short group2 = file1.entries[k]->group;
+					//not the edge which is checked at the moment and only with the same group!
+					if (j != k && k != i && group1 == group2) {
+						allan_relation erg = intersect_relation(web, j, k,
+								refrel);
+						if (erg == 0) {
+							log(ERROR,
+									"Detected incompatible events %d and %d.",
+									get_mapped_nr(web, j),
+									get_mapped_nr(web, k));
+							log(ERROR,
+									"The group %d has more than two lectures of 45min without a break!",
+									group1);
+							return 1;
+						}
+					}
+				}
+			}
+		}
+	}
 	return 0;
 }
 
@@ -614,4 +782,63 @@ void clear_file3() {
 	}
 
 	file3.count = 0;
+}
+
+int find_index_by_nr_in_file1(int nr) {
+	int i;
+
+	for (i = 0; i < file1.count; ++i) {
+		if (file1.entries[i]->nr == nr)
+			return i;
+	}
+
+	return -1;
+}
+
+int count_char(char* string, char element) {
+	if (string == NULL)
+		return NULL;
+
+	int count = 0;
+
+	while (*string != '\0') {
+		if (*string == element)
+			count++;
+		string++;
+	}
+
+	return count;
+}
+
+unsigned short time_in_min_from_string(char* string) {
+	if (string == NULL)
+		return NULL;
+
+	unsigned short time = 0;
+	char temp[10];
+	char* cur = temp;
+
+	//read the hours
+	while (*string != '\0' && *string != ':') {
+		*cur = *string;
+		string++;
+		cur++;
+	}
+	*cur = '\0';
+	time = atoi(temp) * 60;
+
+	//read the minutes
+	if (*string == ':') {
+		cur = temp;
+		string++;
+		while (*string != '\0') {
+			*cur = *string;
+			string++;
+			cur++;
+		}
+		*cur = '\0';
+		time += atoi(temp);
+	}
+
+	return time;
 }

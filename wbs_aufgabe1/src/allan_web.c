@@ -15,8 +15,14 @@ struct allan_web* new_web(unsigned int size) {
 	int i;
 
 	web->relations = malloc(size * sizeof(allan_relation *));
+	//create only a half table. first row has 0, last row has i-1 entries!
+	//-> other relations are either "=" or can be computed using the reverse!
 	for (i = 0; i < size; ++i) {
-		web->relations[i] = malloc(i * sizeof(allan_relation));
+		if(i == 0)
+			//could be removed but it is easier to access the data!
+			web->relations[i] = NULL;
+		else
+			web->relations[i] = malloc(i * sizeof(allan_relation));
 	}
 
 	web->node_mapping = malloc(size * sizeof(int));
@@ -28,6 +34,24 @@ struct allan_web* new_web(unsigned int size) {
 	web->size = size;
 
 	return web;
+}
+
+struct allan_web* copy_web(struct allan_web* web) {
+	if(web == NULL)
+		return NULL;
+
+	struct allan_web* copy = new_web(web->size);
+	int i,j;
+
+	copy->size = web->size;
+
+	//copy the mapping and the data
+	for(i=0;i<copy->size;++i){
+		copy->node_mapping[i] = web->node_mapping[i];
+
+		for(j=0;j<i;++j)
+			copy->relations[i][j] = web->relations[i][j];
+	}
 }
 
 void init_web(struct allan_web* web, allan_relation relation) {
@@ -139,11 +163,12 @@ struct allan_web* free_web(struct allan_web* web) {
 allan_relation get_relation(struct allan_web* web, int a, int b) {
 	if (web == NULL)
 		return 0;
-	if (a == b || a < 0 || a >= web->size || b < 0 || b >= web->size) {
+	if (a < 0 || a >= web->size || b < 0 || b >= web->size) {
 		return 0;
 	}
-
-	if (a < b)
+	if(a == b)
+		return Aeq;
+	else if (a < b)
 		return reverse_allan_rel(web->relations[b][a]);
 	else
 		return web->relations[a][b];
@@ -190,22 +215,24 @@ void print_web(struct allan_web* web, FILE* file, char delimiter) {
 	if (file == NULL)
 		return;
 
+	//table header with node identifiers
 	fprintf(file, "%c", delimiter);
-
 	for (i = 0; i < web->size; i++) {
 		fprintf(file, "%d", get_mapped_nr(web, i));
 		fprintf(file, "%c", delimiter);
 	}
 	fprintf(file, "\n");
 
+	//table content
 	for (i = 0; i < web->size; ++i) {
-		fprintf(file, "%d%c", i + 1, delimiter);
+		//node identifier
+		fprintf(file, "%d%c", get_mapped_nr(web, i), delimiter);
 		for (j = 0; j < web->size; ++j) {
-			if (j < i) {
-				char* rel = allan_rel_to_ascii(web->relations[i][j]);
-				fprintf(file, "%s", rel);
-				free(rel);
-			}
+
+			char* rel = allan_rel_to_ascii(get_relation(web,i,j));
+			fprintf(file, "%s", rel);
+			free(rel);
+
 			fprintf(file, "%c", delimiter);
 		}
 		fprintf(file, "\n");

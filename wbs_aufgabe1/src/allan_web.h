@@ -19,6 +19,7 @@ struct allan_web {
 struct allan_web* new_web(unsigned int size);
 void init_web(struct allan_web* web, allan_relation relation);
 struct allan_web* free_web(struct allan_web* web);
+struct allan_web* copy_web(struct allan_web* web);
 short map_nr_to_index(struct allan_web* web, unsigned short nr,
 		unsigned short index);
 int get_mapped_index(struct allan_web* web, unsigned short nr);
