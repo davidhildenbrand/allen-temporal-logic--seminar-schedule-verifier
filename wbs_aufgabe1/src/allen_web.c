@@ -89,9 +89,6 @@ int get_mapped_index(struct allen_web* web, unsigned short nr) {
 		return -3;
 
 	unsigned short i;
-	//index does not exist
-	if (nr < web->size)
-		return -1;
 
 	//find the mapped value
 	for (i = 0; i < web->size; ++i) {
@@ -118,7 +115,7 @@ short map_nr_to_index(struct allen_web* web, unsigned short nr,
 
 	old_index = get_mapped_index(web, nr);
 
-	if (index >= 0) {
+	if (old_index >= 0) {
 		log(ERROR,"Nr %d already mapped to index %d.", nr, old_index);
 		return -2;
 	}
