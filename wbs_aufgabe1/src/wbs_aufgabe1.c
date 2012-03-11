@@ -530,14 +530,17 @@ int read_file3() {
 void process_group_dependence(struct allen_web* web) {
 	//a group can only join one lecture at a time
 	int i, j;
-	//default is that they have a break in between
-	allen_relation relation = allen_rel_from_ascii("< >");
+	allen_relation refrel = allen_rel_from_ascii("< >");
 
 	//process all combinations of file1 entries
 	//iterate entries in file 1
 	for (i = 0; i < file1.count; ++i) {
 		//iterate starting at the next position
 		for (j = i + 1; j < file1.count; ++j) {
+
+			//default is that they have a break in between
+			allen_relation relation = refrel;
+
 			if (file1.entries[i]->group == file1.entries[j]->group) {
 				//if first one is smaller that 90min, they can meet
 				if (file1.entries[i]->length < 2) {
@@ -725,22 +728,24 @@ short process_90min_break_check(struct allen_web* web) {
 
 	//process all edges
 	for (i = 0; i < web->size; ++i) {
+		unsigned short group1 = file1.entries[i]->group;
 		for (j = 0; j < web->size; ++j) {
+			unsigned short group2 = file1.entries[j]->group;
 
-			//find "m" relations only. "mi" is processed when iterating over the reverse edge
-			if (get_relation(web, i, j) == Am) {
+			//find 2 events of the same group which meet
+			if (group1 == group2 && get_relation(web, i, j) == Am) {
 				//j only allows connection to other nodes of type "<"
 				//process all edges of j
 				for (k = 0; k < web->size; ++k) {
-					unsigned short group1 = file1.entries[j]->group;
-					unsigned short group2 = file1.entries[k]->group;
+					unsigned short group3 = file1.entries[k]->group;
 					//not the edge which is checked at the moment and only with the same group!
-					if (j != k && k != i && group1 == group2) {
+					if (j != k && k != i && group2 == group3) {
 						allen_relation erg = intersect_relation(web, j, k,
 								refrel);
 						if (erg == 0) {
 							log(ERROR,
-									"Detected incompatible events %d and %d.",
+									"Detected incompatible events %d, %d and %d.",
+									get_mapped_nr(web, i),
 									get_mapped_nr(web, j),
 									get_mapped_nr(web, k));
 							log(ERROR,
