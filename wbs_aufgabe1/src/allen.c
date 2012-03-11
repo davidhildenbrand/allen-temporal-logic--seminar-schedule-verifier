@@ -6,12 +6,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "allan.h"
+#include "allen.h"
 
-const allan_relation allan_table[REL_COUNT][REL_COUNT] = { { Aeq, Asm, Abi, Ad,
+const allen_relation allen_table[REL_COUNT][REL_COUNT] = { { Aeq, Asm, Abi, Ad,
 		Adi, Ao, Aoi, Am, Ami, As, Asi, Af, Afi }, { Asm, Asm, All, Asm | Ao
-		| Am | Ad | As, As, As, Asm | Ao | Am | Ad | As, As, Asm | Ao | Am | Ad
-		| As, As, As, Asm | Ao | Am | Ad | As, As }, { Abi, All, Abi, Abi | Aoi
+		| Am | Ad | As, Asm, Asm, Asm | Ao | Am | Ad | As, Asm, Asm | Ao | Am | Ad
+		| As, Asm, Asm, Asm | Ao | Am | Ad | As, Asm }, { Abi, All, Abi, Abi | Aoi
 		| Ami | Ad | Af, Abi, Abi | Aoi | Ami | Ad | Af, Abi, Abi | Aoi | Ami
 		| Ad | Af, Abi, Abi | Aoi | Ami | Ad | Af, Abi, Abi, Abi }, { Ad, Asm,
 		Abi, Ad, All, Asm | Ao | Am | Ad | As, Abi | Aoi | Ami | Ad | Af, Asm,
@@ -21,14 +21,14 @@ const allan_relation allan_table[REL_COUNT][REL_COUNT] = { { Aeq, Asm, Abi, Ad,
 				| Adi | Asi, Ao | Adi | Afi, Aoi | Adi | Asi, Ao | Adi | Afi,
 		Adi, Aoi | Adi | Asi, Adi }, { Ao, Asm, Abi | Aoi | Ami | Adi | Asi, Ao
 		| Ad | As, Asm | Ao | Am | Adi | Afi, Asm | Ao | Am, Aeq | Ad | Adi | Ao
-		| Aoi | As | Asi | Af | Afi, Asm | Aoi | Adi | Asi, Ao | Adi | Afi | Ao,
+		| Aoi | As | Asi | Af | Afi, Asm, Aoi | Adi | Asi, Ao, Adi | Afi | Ao,
 		Ad | As | Ao, Asm | Ao | Am }, { Aoi, Asm | Ao | Am | Adi | Afi, Abi,
 		Aoi | Ad | Af, Asm | Aoi | Ami | Adi | Asi, Aeq | Ad | Adi | Ao | Aoi
 				| As | Asi | Af | Afi, Abi | Aoi | Ami, Ao | Adi | Afi, Abi, Aoi
 				| Ad | Af, Abi | Aoi | Ami, Aoi, Aoi | Asi | Adi }, { Am, Asm,
 		Abi | Aoi | Ami | Adi | Asi, Ao | Ad | As, Asm, Asm, Ao | Ad | As, Asm,
 		Aeq | Af | Afi, Am, Am, Ad | As | Ao, Asm }, { Ami, Asm | Ao | Am | Adi
-		| Afi, Abi, Aoi | Ad | Af, Abi, Aoi | Adi | Af, Abi, Aeq | As | Asi,
+		| Afi, Abi, Aoi | Ad | Af, Abi, Aoi | Ad | Af, Abi, Aeq | As | Asi,
 		Abi, Ad | Af | Aoi, Abi, Ami, Ami }, { As, Asm, Abi, Ad, Asm | Ao | Am
 		| Adi | Afi, Asm | Ao | Am, Aoi | Ad | Af, Asm, Ami, As, Aeq | As | Asi,
 		Ad, Asm | Ao | Am }, { Asi, Asm | Ao | Am | Adi | Afi, Abi, Aoi | Ad
@@ -38,8 +38,8 @@ const allan_relation allan_table[REL_COUNT][REL_COUNT] = { { Aeq, Asm, Abi, Ad,
 		| Afi }, { Afi, Asm, Abi | Aoi | Ami | Adi | Asi, Ao | Ad | As, Adi, Ao,
 		Aoi | Adi | Asi, Am, Aoi | Adi | Asi, Ao, Adi, Aeq | Af | Afi, Afi } };
 
-allan_relation reverse_allan_rel(allan_relation source) {
-	allan_relation destination = 0x0;
+allen_relation reverse_allen_rel(allen_relation source) {
+	allen_relation destination = 0x0;
 
 	if (source & Aeq)
 		destination |= Aeq;
@@ -71,7 +71,7 @@ allan_relation reverse_allan_rel(allan_relation source) {
 	return destination;
 }
 
-char* allan_rel_to_ascii(allan_relation source) {
+char* allen_rel_to_ascii(allen_relation source) {
 	char buffer[128];
 	unsigned short pos = 0;
 
@@ -147,9 +147,9 @@ char* allan_rel_to_ascii(allan_relation source) {
 	return copy;
 }
 
-allan_relation allan_rel_from_ascii(char *source) {
+allen_relation allen_rel_from_ascii(char *source) {
 	int i;
-	allan_relation destination = 0;
+	allen_relation destination = 0;
 
 	if (source == NULL)
 		return 0;
@@ -202,20 +202,20 @@ allan_relation allan_rel_from_ascii(char *source) {
 	return destination;
 }
 
-allan_relation conjunct_allan_rel(allan_relation a, allan_relation b) {
+allen_relation conjunct_allen_rel(allen_relation a, allen_relation b) {
 	return a | b;
 }
 
-allan_relation substract_allan_rel(allan_relation a, allan_relation b) {
+allen_relation substract_allen_rel(allen_relation a, allen_relation b) {
 	return a & (~b);
 }
 
-allan_relation intersect_allan_rel(allan_relation a, allan_relation b) {
+allen_relation intersect_allen_rel(allen_relation a, allen_relation b) {
 	return a & b;
 }
 
-allan_relation allan_p_function(allan_relation a, allan_relation b) {
-	allan_relation destination = 0x0, temp;
+allen_relation allen_p_function(allen_relation a, allen_relation b) {
+	allen_relation destination = 0x0, temp;
 	short i, j;
 
 	for (i = 0; i < REL_COUNT; a >>= 1, ++i) {
@@ -223,8 +223,8 @@ allan_relation allan_p_function(allan_relation a, allan_relation b) {
 			temp = b;
 			for (j = 0; j < REL_COUNT; temp >>= 1, ++j) {
 				if (temp & 0x1) {
-					destination = conjunct_allan_rel(destination,
-							allan_table[i][j]);
+					destination = conjunct_allen_rel(destination,
+							allen_table[i][j]);
 				}
 			}
 		}
@@ -233,18 +233,18 @@ allan_relation allan_p_function(allan_relation a, allan_relation b) {
 	return destination;
 }
 
-short check_allan_rel_consistency(allan_relation ab, allan_relation bc, allan_relation ac){
-	allan_relation calculated_ac = allan_p_function(ab,bc);
+short check_allen_rel_consistency(allen_relation ab, allen_relation bc, allen_relation ac){
+	allen_relation calculated_ac = allen_p_function(ab,bc);
 
-	if(intersect_allan_rel(ac,calculated_ac) == 0)
+	if(intersect_allen_rel(ac,calculated_ac) == 0)
 		return 1;
 	else
 		return 0;
 }
 
-allan_relation allan_rel_from_intervals(unsigned int starta, unsigned int stopa,
+allen_relation allen_rel_from_intervals(unsigned int starta, unsigned int stopa,
 		unsigned int startb, unsigned int stopb) {
-	allan_relation destination = 0;
+	allen_relation destination = 0;
 
 	if (starta > stopa) {
 		unsigned int temp = starta;
@@ -291,4 +291,21 @@ allan_relation allan_rel_from_intervals(unsigned int starta, unsigned int stopa,
 	}
 
 	return destination;
+}
+
+void print_allen_table(FILE* file, char delimiter) {
+	int i, j;
+	if (file == NULL)
+		return;
+
+	fprintf(file, "\n");
+	for(i=0;i<REL_COUNT;++i){
+		for(j=0;j<REL_COUNT;++j){
+			char* rel = allen_rel_to_ascii(allen_table[i][j]);
+			fprintf(file, "%s%c", rel,delimiter);
+			free(rel);
+		}
+		fprintf(file, "\n");
+	}
+	fflush(file);
 }

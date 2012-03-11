@@ -3,18 +3,18 @@
  Author      : David hildenbrand, Tobias Schoknecht
  */
 
-#include "allan_web.h"
-#include "allan.h"
+#include "allen_web.h"
+#include "allen.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "logger.h"
 
-struct allan_web* new_web(unsigned int size) {
-	struct allan_web* web = (struct allan_web*) malloc(
-			sizeof(struct allan_web));
+struct allen_web* new_web(unsigned int size) {
+	struct allen_web* web = (struct allen_web*) malloc(
+			sizeof(struct allen_web));
 	int i;
 
-	web->relations = malloc(size * sizeof(allan_relation *));
+	web->relations = malloc(size * sizeof(allen_relation *));
 	//create only a half table. first row has 0, last row has i-1 entries!
 	//-> other relations are either "=" or can be computed using the reverse!
 	for (i = 0; i < size; ++i) {
@@ -22,7 +22,7 @@ struct allan_web* new_web(unsigned int size) {
 			//could be removed but it is easier to access the data!
 			web->relations[i] = NULL;
 		else
-			web->relations[i] = malloc(i * sizeof(allan_relation));
+			web->relations[i] = malloc(i * sizeof(allen_relation));
 	}
 
 	web->node_mapping = malloc(size * sizeof(int));
@@ -36,11 +36,11 @@ struct allan_web* new_web(unsigned int size) {
 	return web;
 }
 
-struct allan_web* copy_web(struct allan_web* web) {
+struct allen_web* copy_web(struct allen_web* web) {
 	if(web == NULL)
 		return NULL;
 
-	struct allan_web* copy = new_web(web->size);
+	struct allen_web* copy = new_web(web->size);
 	int i,j;
 
 	copy->size = web->size;
@@ -54,7 +54,7 @@ struct allan_web* copy_web(struct allan_web* web) {
 	}
 }
 
-void init_web(struct allan_web* web, allan_relation relation) {
+void init_web(struct allen_web* web, allen_relation relation) {
 	int i, j;
 	if (web == NULL)
 		return;
@@ -68,7 +68,7 @@ void init_web(struct allan_web* web, allan_relation relation) {
 	return;
 }
 
-int get_mapped_nr(struct allan_web* web, unsigned short index) {
+int get_mapped_nr(struct allen_web* web, unsigned short index) {
 	if (web == NULL)
 		return -3;
 
@@ -82,7 +82,7 @@ int get_mapped_nr(struct allan_web* web, unsigned short index) {
 	return nr;
 }
 
-int get_mapped_index(struct allan_web* web, unsigned short nr) {
+int get_mapped_index(struct allen_web* web, unsigned short nr) {
 	if (web == NULL)
 		return -3;
 
@@ -101,7 +101,7 @@ int get_mapped_index(struct allan_web* web, unsigned short nr) {
 	return -2;
 }
 
-short map_nr_to_index(struct allan_web* web, unsigned short nr,
+short map_nr_to_index(struct allen_web* web, unsigned short nr,
 		unsigned short index) {
 	if (web == NULL)
 		return -3;
@@ -124,7 +124,7 @@ short map_nr_to_index(struct allan_web* web, unsigned short nr,
 	return 0;
 }
 
-void remove_mapping(struct allan_web* web, unsigned short index) {
+void remove_mapping(struct allen_web* web, unsigned short index) {
 	if (web == NULL)
 		return;
 
@@ -134,7 +134,7 @@ void remove_mapping(struct allan_web* web, unsigned short index) {
 	web->node_mapping[index] = -1;
 }
 
-void clear_mapping(struct allan_web* web) {
+void clear_mapping(struct allen_web* web) {
 	int i;
 
 	if (web == NULL)
@@ -145,7 +145,7 @@ void clear_mapping(struct allan_web* web) {
 	}
 }
 
-struct allan_web* free_web(struct allan_web* web) {
+struct allen_web* free_web(struct allen_web* web) {
 	int i;
 	if (web == NULL)
 		return NULL;
@@ -160,7 +160,7 @@ struct allan_web* free_web(struct allan_web* web) {
 	return NULL;
 }
 
-allan_relation get_relation(struct allan_web* web, int a, int b) {
+allen_relation get_relation(struct allen_web* web, int a, int b) {
 	if (web == NULL)
 		return 0;
 	if (a < 0 || a >= web->size || b < 0 || b >= web->size) {
@@ -169,13 +169,13 @@ allan_relation get_relation(struct allan_web* web, int a, int b) {
 	if(a == b)
 		return Aeq;
 	else if (a < b)
-		return reverse_allan_rel(web->relations[b][a]);
+		return reverse_allen_rel(web->relations[b][a]);
 	else
 		return web->relations[a][b];
 }
 
-allan_relation intersect_relation(struct allan_web* web, int a, int b,
-		allan_relation rel) {
+allen_relation intersect_relation(struct allen_web* web, int a, int b,
+		allen_relation rel) {
 	if (web == NULL)
 		return 0;
 	if (a == b || a < 0 || a >= web->size || b < 0 || b >= web->size) {
@@ -183,17 +183,17 @@ allan_relation intersect_relation(struct allan_web* web, int a, int b,
 	}
 
 	if (a < b) {
-		web->relations[b][a] = intersect_allan_rel(reverse_allan_rel(rel),
+		web->relations[b][a] = intersect_allen_rel(reverse_allen_rel(rel),
 				web->relations[b][a]);
-		return reverse_allan_rel(web->relations[b][a]);
+		return reverse_allen_rel(web->relations[b][a]);
 	} else {
-		web->relations[a][b] = intersect_allan_rel(rel, web->relations[a][b]);
+		web->relations[a][b] = intersect_allen_rel(rel, web->relations[a][b]);
 		return web->relations[a][b];
 	}
 }
 
-allan_relation conjunct_relation(struct allan_web* web, int a, int b,
-		allan_relation rel) {
+allen_relation conjunct_relation(struct allen_web* web, int a, int b,
+		allen_relation rel) {
 	if (web == NULL)
 		return 0;
 	if (a == b || a < 0 || a >= web->size || b < 0 || b >= web->size) {
@@ -201,16 +201,16 @@ allan_relation conjunct_relation(struct allan_web* web, int a, int b,
 	}
 
 	if (a < b) {
-		web->relations[b][a] = conjunct_allan_rel(reverse_allan_rel(rel),
+		web->relations[b][a] = conjunct_allen_rel(reverse_allen_rel(rel),
 				web->relations[b][a]);
-		return reverse_allan_rel(web->relations[b][a]);
+		return reverse_allen_rel(web->relations[b][a]);
 	} else {
-		web->relations[a][b] = conjunct_allan_rel(rel, web->relations[a][b]);
+		web->relations[a][b] = conjunct_allen_rel(rel, web->relations[a][b]);
 		return web->relations[a][b];
 	}
 }
 
-void print_web(struct allan_web* web, FILE* file, char delimiter) {
+void print_web(struct allen_web* web, FILE* file, char delimiter) {
 	int i, j;
 	if (file == NULL)
 		return;
@@ -229,41 +229,40 @@ void print_web(struct allan_web* web, FILE* file, char delimiter) {
 		fprintf(file, "%d%c", get_mapped_nr(web, i), delimiter);
 		for (j = 0; j < web->size; ++j) {
 
-			char* rel = allan_rel_to_ascii(get_relation(web,i,j));
-			fprintf(file, "%s", rel);
+			char* rel = allen_rel_to_ascii(get_relation(web,i,j));
+			fprintf(file, "%s%c", rel,delimiter);
 			free(rel);
-
-			fprintf(file, "%c", delimiter);
 		}
 		fprintf(file, "\n");
 	}
+
 	fflush(file);
 }
 
-short check_tripple_consistency(struct allan_web* web, unsigned int a,
+short check_tripple_consistency(struct allen_web* web, unsigned int a,
 		unsigned int b, unsigned int c) {
-	allan_relation ab = get_relation(web, a, b);
-	allan_relation bc = get_relation(web, b, c);
-	allan_relation ac = get_relation(web, a, c);
+	allen_relation ab = get_relation(web, a, b);
+	allen_relation bc = get_relation(web, b, c);
+	allen_relation ac = get_relation(web, a, c);
 
-	if (check_allan_rel_consistency(ab, bc, ac) != 0) {
+	if (check_allen_rel_consistency(ab, bc, ac) != 0) {
 		log(ERROR,"Consistency check of %d,%d and %d failed!", a, b, c);
 		return 1;
 	} else
 		return 0;
 }
 
-short path_consistency_method_tripple(struct allan_web* web, unsigned int a,
+short path_consistency_method_tripple(struct allen_web* web, unsigned int a,
 		unsigned int b, unsigned int c) {
-	allan_relation ab = get_relation(web, a, b);
-	allan_relation bc = get_relation(web, b, c);
-	allan_relation ac = get_relation(web, a, c);
+	allen_relation ab = get_relation(web, a, b);
+	allen_relation bc = get_relation(web, b, c);
+	allen_relation ac = get_relation(web, a, c);
 
 	//calculate the ac
-	allan_relation cal_ac = allan_p_function(ab, bc);
+	allen_relation cal_ac = allen_p_function(ab, bc);
 
 	//intersect the calculated one with the existing one
-	allan_relation new_ac = intersect_relation(web, a, c, cal_ac);
+	allen_relation new_ac = intersect_relation(web, a, c, cal_ac);
 
 	//error in the web
 	if (new_ac == 0) {
@@ -281,7 +280,7 @@ short path_consistency_method_tripple(struct allan_web* web, unsigned int a,
 	}
 }
 
-short path_consistency_method(struct allan_web* web) {
+short path_consistency_method(struct allen_web* web) {
 	if (web == NULL)
 		return -1;
 

@@ -5,8 +5,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "allan.h"
-#include "allan_web.h"
+#include "allen.h"
+#include "allen_web.h"
 #include "wbs_aufgabe1.h"
 #include "logger.h"
 
@@ -18,9 +18,9 @@ struct file3 file3;
 
 int main(int argc, char** argv) {
 	int error = EXIT_SUCCESS;
-	struct allan_web* web = NULL;
+	struct allen_web* web = NULL;
 
-	log(INFO, "Allan schedule verifier.");
+	log(INFO, "Allen schedule verifier.");
 	log_filled_line('-');
 	log(INFO, "Copyright David Hildenbrand, Tobias Schoknecht - 2012.");
 	log_filled_line('-');
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
 
 	web = new_web(file1.count);
 
-	log(INFO, "Allan web of size %d created.", web->size);
+	log(INFO, "Allen web of size %d created.", web->size);
 	init_web(web, All);
 
 	log_filled_line('-');
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
 	return error;
 }
 
-short write_web_to_files(struct allan_web* web, char* path) {
+short write_web_to_files(struct allen_web* web, char* path) {
 	if (path == NULL) {
 		return -1;
 	}
@@ -531,11 +531,11 @@ int read_file3() {
 		fclose(file);
 	return error;
 }
-void process_group_dependence(struct allan_web* web) {
+void process_group_dependence(struct allen_web* web) {
 	//a group can only join one lecture at a time
 	int i, j;
 	//default is that they have a break in between
-	allan_relation relation = allan_rel_from_ascii("< >");
+	allen_relation relation = allen_rel_from_ascii("< >");
 
 	//process all combinations of file1 entries
 	//iterate entries in file 1
@@ -558,10 +558,10 @@ void process_group_dependence(struct allan_web* web) {
 	}
 }
 
-void process_lecturer_dependence(struct allan_web* web) {
+void process_lecturer_dependence(struct allen_web* web) {
 	//same lecturer can't take part in two lectures at the same time
 	int i, j;
-	const allan_relation relation = allan_rel_from_ascii("m mi < >");
+	const allen_relation relation = allen_rel_from_ascii("m mi < >");
 
 	//process all combinations of file1
 	//iterate entries in file 1
@@ -576,10 +576,10 @@ void process_lecturer_dependence(struct allan_web* web) {
 	}
 }
 
-void process_room_dependence(struct allan_web* web) {
+void process_room_dependence(struct allen_web* web) {
 	//a room can only contain one group at the time
 	int i, j;
-	const allan_relation relation = allan_rel_from_ascii("m mi < >");
+	const allen_relation relation = allen_rel_from_ascii("m mi < >");
 
 	//process all combinations of file1
 	//iterate entries in file 1
@@ -594,9 +594,9 @@ void process_room_dependence(struct allan_web* web) {
 	}
 }
 
-void process_dependencies(struct allan_web* web) {
+void process_dependencies(struct allen_web* web) {
 	//process the dependencies described in file 2
-	const allan_relation relation = allan_rel_from_ascii("m <");
+	const allen_relation relation = allen_rel_from_ascii("m <");
 	struct file2_entry* cur = NULL;
 	int i;
 
@@ -612,7 +612,7 @@ void process_dependencies(struct allan_web* web) {
 	}
 }
 
-short process_basic_checks(struct allan_web* web) {
+short process_basic_checks(struct allen_web* web) {
 	if (web == NULL)
 		return -3;
 
@@ -633,9 +633,9 @@ short process_basic_checks(struct allan_web* web) {
 	unsigned short startb = 0;
 	unsigned short stopa = 0;
 	unsigned short stopb = 0;
-	allan_relation rel = 0;
-	allan_relation rel2 = 0;
-	allan_relation erg = 0;
+	allen_relation rel = 0;
+	allen_relation rel2 = 0;
+	allen_relation erg = 0;
 
 	//compare each pair of entries in file3
 	for (i = 0; i < file3.count; ++i) {
@@ -685,7 +685,7 @@ short process_basic_checks(struct allan_web* web) {
 				stopb += 45;
 
 			//find out the relation of both events
-			rel = allan_rel_from_intervals(starta, stopa, startb, stopb);
+			rel = allen_rel_from_intervals(starta, stopa, startb, stopb);
 			//intersect the current relation with their real relation described in file3
 			rel2 = get_relation(web, indexa, indexb);
 			erg = intersect_relation(web, indexa, indexb, rel);
@@ -695,8 +695,8 @@ short process_basic_checks(struct allan_web* web) {
 				log(ERROR, "Detected incompatible events %d and %d.",
 						entrya->event, entryb->event);
 				log(ERROR, "Their relation is '%s', but only '%s' is allowed.",
-						allan_rel_to_ascii(rel), allan_rel_to_ascii(rel2),
-						allan_rel_to_ascii(erg));
+						allen_rel_to_ascii(rel), allen_rel_to_ascii(rel2),
+						allen_rel_to_ascii(erg));
 				return 1;
 			}
 
@@ -719,12 +719,12 @@ short process_basic_checks(struct allan_web* web) {
 	return 0;
 }
 
-short process_90min_break_check(struct allan_web* web) {
+short process_90min_break_check(struct allen_web* web) {
 	if (web == NULL)
 		return -3;
 	int i, j, k;
 
-	allan_relation refrel = allan_rel_from_ascii("<");
+	allen_relation refrel = allen_rel_from_ascii("<");
 
 	//process all edges
 	for (i = 0; i < web->size; ++i) {
@@ -739,7 +739,7 @@ short process_90min_break_check(struct allan_web* web) {
 					unsigned short group2 = file1.entries[k]->group;
 					//not the edge which is checked at the moment and only with the same group!
 					if (j != k && k != i && group1 == group2) {
-						allan_relation erg = intersect_relation(web, j, k,
+						allen_relation erg = intersect_relation(web, j, k,
 								refrel);
 						if (erg == 0) {
 							log(ERROR,
