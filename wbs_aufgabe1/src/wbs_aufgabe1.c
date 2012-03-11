@@ -723,8 +723,9 @@ short process_90min_break_check(struct allen_web* web) {
 	if (web == NULL)
 		return -3;
 	int i, j, k;
-
-	allen_relation refrel = allen_rel_from_ascii("<");
+	//if 2 events of a group meet(--> 90 min), a third one of that group must either be smaller or bigger than one of the nodes
+	//otherwise a group could have lectures greater than 90 minutes!
+	allen_relation refrel = allen_rel_from_ascii("< >");
 
 	//process all edges
 	for (i = 0; i < web->size; ++i) {
@@ -740,6 +741,7 @@ short process_90min_break_check(struct allen_web* web) {
 					unsigned short group3 = file1.entries[k]->group;
 					//not the edge which is checked at the moment and only with the same group!
 					if (j != k && k != i && group2 == group3) {
+						//this edge can only be smaller or greater!
 						allen_relation erg = intersect_relation(web, j, k,
 								refrel);
 						if (erg == 0) {
