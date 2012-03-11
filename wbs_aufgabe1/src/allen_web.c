@@ -52,6 +52,8 @@ struct allen_web* copy_web(struct allen_web* web) {
 		for(j=0;j<i;++j)
 			copy->relations[i][j] = web->relations[i][j];
 	}
+
+	return copy;
 }
 
 void init_web(struct allen_web* web, allen_relation relation) {
@@ -88,7 +90,7 @@ int get_mapped_index(struct allen_web* web, unsigned short nr) {
 
 	unsigned short i;
 	//index does not exist
-	if (index < web->size)
+	if (nr < web->size)
 		return -1;
 
 	//find the mapped value
@@ -114,7 +116,9 @@ short map_nr_to_index(struct allen_web* web, unsigned short nr,
 	if (web->node_mapping[index] != -1)
 		log(WARN,"Overwriting existing mapping of index %d.", index);
 
-	if (old_index = get_mapped_index(web, nr) >= 0) {
+	old_index = get_mapped_index(web, nr);
+
+	if (index >= 0) {
 		log(ERROR,"Nr %d already mapped to index %d.", nr, old_index);
 		return -2;
 	}

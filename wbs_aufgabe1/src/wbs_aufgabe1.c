@@ -822,7 +822,7 @@ int count_char(char* string, char element) {
 
 unsigned short time_in_min_from_string(char* string) {
 	if (string == NULL)
-		return NULL;
+		return 0;
 
 	unsigned short time = 0;
 	char temp[10];
