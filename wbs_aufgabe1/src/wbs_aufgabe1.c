@@ -76,6 +76,14 @@ int main(int argc, char** argv) {
 
 	log_filled_line('-');
 
+	log(INFO, "The following lectures have been red:");
+
+	for (i = 0; i < file1.count; ++i) {
+		log(INFO, "\tLecture %d: %s", file1.entries[i]->nr, file1.entries[i]->name);
+	}
+
+	log_filled_line('-');
+
 	web = new_web(file1.count);
 
 	log(INFO, "Allan web of size %d created.", web->size);
@@ -220,11 +228,11 @@ short add_lecturer(char* name) {
 	if (lecturer.count + 1 == LECTURER_ENTRY_COUNT_MAX) {
 		log(ERROR, "Too many lecturer used. Max is set to %d.",
 				LECTURER_ENTRY_COUNT_MAX);
-		exit(-1);
+		return(-1);
 	}
 
 	lecturer.elements[lecturer.count] = (char*) malloc(
-			strlen(name) * sizeof(char));
+			(strlen(name)+1) * sizeof(char));
 	strcpy(lecturer.elements[lecturer.count], name);
 
 	return lecturer.count++;
@@ -320,8 +328,8 @@ int read_file1() {
 
 		//read the name
 		read_next(buffer, temp, &offset);
-		new_entry->name = (char*) malloc(strlen(temp) * sizeof(char));
-		strcpy(&new_entry->name, temp);
+		new_entry->name = (char*) malloc((strlen(temp)+1) * sizeof(char));
+		strcpy(new_entry->name, temp);
 
 		//read the lecturer
 		read_next(buffer, temp, &offset);
@@ -755,6 +763,8 @@ void clear_file1() {
 	int i;
 
 	for (i = 0; i < file1.count; ++i) {
+		if(file1.entries[i]->name != NULL)
+			free(file1.entries[i]->name);
 		free(file1.entries[i]);
 		file1.entries[i] = NULL;
 	}
