@@ -110,11 +110,13 @@ short map_nr_to_index(struct allen_web* web, unsigned short nr,
 	if (index >= web->size)
 		return -1;
 
+	//index is already mapped?
 	if (web->node_mapping[index] != -1)
 		log(WARN,"Overwriting existing mapping of index %d.", index);
 
 	old_index = get_mapped_index(web, nr);
 
+	//nr mapped to another index?
 	if (old_index >= 0) {
 		log(ERROR,"Nr %d already mapped to index %d.", nr, old_index);
 		return -2;

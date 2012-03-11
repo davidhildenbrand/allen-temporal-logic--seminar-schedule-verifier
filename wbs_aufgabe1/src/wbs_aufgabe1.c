@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
 	log(INFO, "The following lectures have been red:");
 
 	for (i = 0; i < file1.count; ++i) {
-		log(INFO, "\tLecture %d: %s", file1.entries[i]->nr, file1.entries[i]->name);
+		log(INFO, "\t%d: %s", file1.entries[i]->nr, file1.entries[i]->name);
 	}
 
 	log_filled_line('-');
@@ -151,18 +151,14 @@ int main(int argc, char** argv) {
 		log(ERROR, "Check was not successful!");
 		error = 3;
 		goto error;
-	} else {
-		log(INFO, "Check was successful!");
 	}
 
-	log(INFO, "... running advanced '90min break' check");
+	log(INFO, "... advanced '90min break' check");
 
 	if (process_90min_break_check(web) != 0) {
 		log(ERROR, "Check was not successful!");
 		error = 4;
 		goto error;
-	} else {
-		log(INFO, "Check was successful!");
 	}
 
 	log(INFO, "... final web consistency check (path consistency method)");
@@ -228,11 +224,11 @@ short add_lecturer(char* name) {
 	if (lecturer.count + 1 == LECTURER_ENTRY_COUNT_MAX) {
 		log(ERROR, "Too many lecturer used. Max is set to %d.",
 				LECTURER_ENTRY_COUNT_MAX);
-		return(-1);
+		return (-1);
 	}
 
 	lecturer.elements[lecturer.count] = (char*) malloc(
-			(strlen(name)+1) * sizeof(char));
+			(strlen(name) + 1) * sizeof(char));
 	strcpy(lecturer.elements[lecturer.count], name);
 
 	return lecturer.count++;
@@ -328,7 +324,7 @@ int read_file1() {
 
 		//read the name
 		read_next(buffer, temp, &offset);
-		new_entry->name = (char*) malloc((strlen(temp)+1) * sizeof(char));
+		new_entry->name = (char*) malloc((strlen(temp) + 1) * sizeof(char));
 		strcpy(new_entry->name, temp);
 
 		//read the lecturer
@@ -349,10 +345,10 @@ int read_file1() {
 		//either 1 or 2, 45 or 90, other values are not allowed!
 		switch (new_entry->length) {
 		case 1:
-		case 2:
 		case 45:
 			new_entry->length = 1;
 			break;
+		case 2:
 		case 90:
 			new_entry->length = 2;
 			break;
@@ -710,9 +706,10 @@ short process_basic_checks(struct allen_web* web) {
 			log(ERROR, "Required event %d was not defined in the schedule!",
 					get_mapped_nr(web, i));
 			return -2;
-		}
-		else if(found[i] == 0){
-			log(WARN, "Event %d was not defined in the schedule but is not needed!",get_mapped_nr(web, i));
+		} else if (found[i] == 0) {
+			log(WARN,
+					"Event %d was not defined in the schedule but is not needed!",
+					get_mapped_nr(web, i));
 		}
 	}
 
@@ -763,7 +760,7 @@ void clear_file1() {
 	int i;
 
 	for (i = 0; i < file1.count; ++i) {
-		if(file1.entries[i]->name != NULL)
+		if (file1.entries[i]->name != NULL)
 			free(file1.entries[i]->name);
 		free(file1.entries[i]);
 		file1.entries[i] = NULL;
