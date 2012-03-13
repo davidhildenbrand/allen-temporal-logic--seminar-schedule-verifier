@@ -541,15 +541,16 @@ void process_group_dependence(struct allen_web* web) {
 			//default is that they have a break in between
 			allen_relation relation = refrel;
 
+
 			if (file1.entries[i]->group == file1.entries[j]->group) {
-				//if first one is smaller that 90min, they can meet
-				if (file1.entries[i]->length < 2) {
+				//if one lecture is longer than 90 min, they can't meet otherwise both can meet
+				if (file1.entries[i]->length < 2 && file1.entries[j]->length < 2) {
 					relation |= Am;
-				}
-				//if second one is smaller that 90min, they can meet
-				if (file1.entries[j]->length < 2) {
 					relation |= Ami;
 				}
+
+				log(INFO,"%d,%d:%s",file1.entries[i]->nr,file1.entries[j]->nr,allen_rel_to_ascii(relation));
+
 				//intersect the relation
 				intersect_relation(web, i, j, relation);
 			}
