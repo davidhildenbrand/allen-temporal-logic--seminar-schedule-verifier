@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
 
 	file1.path = "A_017_1_Bsp.csv";
 	file2.path = "A_017_2_Bsp.csv";
-	file3.path = "A_017_3p_Bsp.csv";
+	file3.path = "A_017_3_Bsp.csv";
 	char* out_file = "out.csv";
 
 	if (argc > 3) {
@@ -548,8 +548,6 @@ void process_group_dependence(struct allen_web* web) {
 					relation |= Am;
 					relation |= Ami;
 				}
-
-				log(INFO,"%d,%d:%s",file1.entries[i]->nr,file1.entries[j]->nr,allen_rel_to_ascii(relation));
 
 				//intersect the relation
 				intersect_relation(web, i, j, relation);
