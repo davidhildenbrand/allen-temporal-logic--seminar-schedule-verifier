@@ -1,8 +1,6 @@
 /*
- * logger.h
- *
- *  Created on: 08.03.2012
- *      Author: davidhildenbrand
+ Name        : WBS Aufgabe 1
+ Author      : David Hildenbrand, Tobias Schoknecht
  */
 
 #ifndef LOGGER_H_

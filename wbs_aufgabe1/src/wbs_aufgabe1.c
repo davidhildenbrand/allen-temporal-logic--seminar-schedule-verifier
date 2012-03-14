@@ -1,6 +1,6 @@
 /*
  Name        : WBS Aufgabe 1
- Author      : David hildenbrand, Tobias Schoknecht
+ Author      : David Hildenbrand, Tobias Schoknecht
  */
 
 #include <stdio.h>
@@ -723,7 +723,7 @@ short process_90min_break_check(struct allen_web* web) {
 		return -3;
 	int i, j, k;
 	//if 2 events of a group meet(--> 90 min), a third one of that group must either be smaller or bigger than one of the nodes
-	//otherwise a group could have lectures greater than 90 minutes!
+	//otherwise a group could have lectures with more than 90 minutes in a row!
 	allen_relation refrel = allen_rel_from_ascii("< >");
 
 	//process all edges

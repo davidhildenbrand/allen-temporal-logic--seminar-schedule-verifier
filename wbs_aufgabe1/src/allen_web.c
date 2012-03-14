@@ -1,6 +1,6 @@
 /*
  Name        : WBS Aufgabe 1
- Author      : David hildenbrand, Tobias Schoknecht
+ Author      : David Hildenbrand, Tobias Schoknecht
  */
 
 #include "allen_web.h"
