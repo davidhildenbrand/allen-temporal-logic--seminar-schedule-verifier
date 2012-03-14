@@ -11,10 +11,17 @@
 #include "logger.h"
 
 /*	global variables	*/
+
+//found lecturers
 struct lecturer_control lecturer;
+//file1-3
 struct file1 file1;
 struct file2 file2;
 struct file3 file3;
+//found events in the schedule
+char found[file1.count];
+//required events in the schedule
+char required[file1.count];
 
 int main(int argc, char** argv) {
 	int error = EXIT_SUCCESS;
@@ -616,9 +623,7 @@ short process_basic_checks(struct allen_web* web) {
 
 	int i, j, k;
 
-	//to arrays for additional dependencies checking
-	char found[file1.count];
-	char required[file1.count];
+	//reset the arrays of found and required events
 	for (i = 0; i < file1.count; required[i] = 0, found[i++] = 0)
 		;
 
@@ -732,14 +737,14 @@ short process_90min_break_check(struct allen_web* web) {
 		for (j = 0; j < web->size; ++j) {
 			unsigned short group2 = file1.entries[j]->group;
 
-			//find 2 events of the same group which meet
-			if (group1 == group2 && get_relation(web, i, j) == Am) {
+			//find 2 events of the same group which meet and have been found in the schedule
+			if (found[i] && found[j] && group1 == group2 && get_relation(web, i, j) == Am) {
 				//j only allows connection to other nodes of type "<"
 				//process all edges of j
 				for (k = 0; k < web->size; ++k) {
 					unsigned short group3 = file1.entries[k]->group;
-					//not the edge which is checked at the moment and only with the same group!
-					if (j != k && k != i && group2 == group3) {
+					//not the edge which is checked at the moment and only events with the same group and which have been found in the schedule!
+					if (found[k] && j != k && k != i && group2 == group3) {
 						//this edge can only be smaller or greater!
 						allen_relation erg = intersect_relation(web, j, k,
 								refrel);
