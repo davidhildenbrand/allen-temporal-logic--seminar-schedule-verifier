@@ -19,9 +19,9 @@ struct file1 file1;
 struct file2 file2;
 struct file3 file3;
 //found events in the schedule
-char found[FILE1_ENTRY_COUNT_MAX];
+char found_events[FILE1_ENTRY_COUNT_MAX];
 //required events in the schedule
-char required[FILE1_ENTRY_COUNT_MAX];
+char required_events[FILE1_ENTRY_COUNT_MAX];
 
 int main(int argc, char** argv) {
 	int error = EXIT_SUCCESS;
@@ -624,7 +624,7 @@ short process_basic_checks(struct allen_web* web) {
 	int i, j, k;
 
 	//reset the arrays of found and required events
-	for (i = 0; i < file1.count; required[i] = 0, found[i++] = 0)
+	for (i = 0; i < file1.count; required_events[i] = 0, found_events[i++] = 0)
 		;
 
 	//variables used inside the loop
@@ -646,17 +646,17 @@ short process_basic_checks(struct allen_web* web) {
 		indexa = get_mapped_index(web, entrya->event);
 
 		//check if the event has already been placed
-		if (found[indexa] != 0) {
+		if (found_events[indexa] != 0) {
 			log(ERROR, "Duplicate event in file3: %d!", entrya->event);
 			return -4;
 		}
 		//mark it as found
-		found[indexa] = 1;
+		found_events[indexa] = 1;
 		//find all events that the current event depends on.
 		for (k = 0; k < file2.count; ++k) {
 			if (file2.entries[k]->post == entrya->event) {
 				//mark it as required
-				required[get_mapped_index(web, file2.entries[k]->pre)] = 1;
+				required_events[get_mapped_index(web, file2.entries[k]->pre)] = 1;
 			}
 		}
 
@@ -709,11 +709,11 @@ short process_basic_checks(struct allen_web* web) {
 	//check if all required events have been found
 	for (i = 0; i < file1.count; ++i) {
 		//event required but not found
-		if (required[i] == 1 && found[i] == 0) {
+		if (required_events[i] == 1 && found_events[i] == 0) {
 			log(ERROR, "Required event %d was not defined in the schedule!",
 					get_mapped_nr(web, i));
 			return -2;
-		} else if (found[i] == 0) {
+		} else if (found_events[i] == 0) {
 			log(WARN,
 					"Event %d was not defined in the schedule but is not needed!",
 					get_mapped_nr(web, i));
@@ -738,13 +738,13 @@ short process_90min_break_check(struct allen_web* web) {
 			unsigned short group2 = file1.entries[j]->group;
 
 			//find 2 events of the same group which meet and have been found in the schedule
-			if (found[i] && found[j] && group1 == group2 && get_relation(web, i, j) == Am) {
+			if (found_events[i] && found_events[j] && group1 == group2 && get_relation(web, i, j) == Am) {
 				//j only allows connection to other nodes of type "<"
 				//process all edges of j
 				for (k = 0; k < web->size; ++k) {
 					unsigned short group3 = file1.entries[k]->group;
 					//not the edge which is checked at the moment and only events with the same group and which have been found in the schedule!
-					if (found[k] && j != k && k != i && group2 == group3) {
+					if (found_events[k] && j != k && k != i && group2 == group3) {
 						//this edge can only be smaller or greater!
 						allen_relation erg = intersect_relation(web, j, k,
 								refrel);
