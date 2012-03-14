@@ -19,9 +19,9 @@ struct file1 file1;
 struct file2 file2;
 struct file3 file3;
 //found events in the schedule
-char found[file1.count];
+char found[FILE1_ENTRY_COUNT_MAX];
 //required events in the schedule
-char required[file1.count];
+char required[FILE1_ENTRY_COUNT_MAX];
 
 int main(int argc, char** argv) {
 	int error = EXIT_SUCCESS;
