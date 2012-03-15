@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 
 	log_filled_line('-');
 
-	log(INFO, "The following lectures have been red:");
+	log(INFO, "The following lectures have been read:");
 
 	for (i = 0; i < file1.count; ++i) {
 		log(INFO, "\t%d: %s", file1.entries[i]->nr, file1.entries[i]->name);
