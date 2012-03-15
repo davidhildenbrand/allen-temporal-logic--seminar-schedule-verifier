@@ -300,15 +300,19 @@ short path_consistency_method(struct allen_web* web) {
 	//perform the path method while we have a change
 	while (change == 1) {
 		change = 0;
-		//iterate all edges
+		//we will calculate each possible combinations of 2 edges (AB BC) resulting in a third one (AC)
+		//its not enough to calc AC only, BC CA -> BA and BA AC -> BC has also to be done
 		for (i = 0; i < web->size; ++i) {
-			for (j = i + 1; j < web->size; ++j) {
-				for (k = j + 1; k < web->size; ++k) {
-					short ret = path_consistency_method_tripple(web, i, j, k);
-					if (ret == 1)
-						change = 1;
-					if (ret == -1)
-						return 1;
+			for (j = 0; j < web->size; ++j) {
+				for (k = 0; k < web->size; ++k) {
+					//3 different nodes
+					if(i!=j && i!=k && j!=k){
+						short ret = path_consistency_method_tripple(web, i, j, k);
+						if (ret == 1)
+							change = 1;
+						if (ret == -1)
+							return 1;
+					}
 				}
 			}
 		}
