@@ -1,6 +1,14 @@
 /*
  Name        : WBS Aufgabe 1
  Author      : David Hildenbrand, Tobias Schoknecht
+ Copyright   : David Hildenbrand, Tobias Schoknecht 2012
+* ----------------------------------------------------------------------------
+* "THE BEER-WARE LICENSE" (Revision 42):
+* david.hildenbrand@gmail.com and tobias.schoknecht@gmail.com wrote this file.
+* As long as you retain this notice you can do whatever you want with this
+* stuff. If we meet some day, and you think this stuff is worth it, you can
+* buy us a beer in return David Hildenbrand, Tobias Schoknecht
+* ----------------------------------------------------------------------------
  */
 
 #ifndef ALLEN_WEB_H_

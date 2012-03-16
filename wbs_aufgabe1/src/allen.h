@@ -1,6 +1,7 @@
 /*
  Name        : WBS Aufgabe 1
  Author      : David Hildenbrand, Tobias Schoknecht
+ Copyright   : David Hildenbrand, Tobias Schoknecht 2012
  */
 
 #ifndef _ALLEN_H_
