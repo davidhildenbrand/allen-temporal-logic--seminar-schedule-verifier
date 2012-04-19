@@ -1,0 +1,11 @@
+"Nr";"Veranstaltung";"Dozent";"Seminargruppe";"Laenge";"Raum"
+1;"Datenstrukturen";"Avery";1;1;1
+3;"Algorithmen";"Schmitz";1;2;1
+5;"Data Mining";"Schmitz";1;2;1
+7;"Theoretische Informatik";"Avery";1;2;3
+9;"Webengineering";"Schmitz";1;1;1
+2;"Datenstrukturen";"Avery";2;1;2
+4;"Algorithmen";"Magle";2;2;2
+6;"Data Mining";"Avery";2;2;2
+8;"Theoretische Informatik";"Magle";2;2;3
+10;"Webengineering";"Schmitz";2;1;2

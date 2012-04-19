@@ -1,0 +1,6 @@
+This is a program made to verify a seminar schedule using allen temporal logic.
+
+The seminar schedule is specified within 3 csv-files.
+(Examples can be found in the testfiles directory).
+
+In order to pass it has to meet certain constraints such as breaks between long lectures or non-overlapping lectures for the same lecturer/class/room.
