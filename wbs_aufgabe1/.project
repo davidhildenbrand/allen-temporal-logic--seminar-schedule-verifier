@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>wbs_aufgabe1</name>
+	<name>allen-temporal-logic--seminar-schedule-verifier</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -9,6 +9,10 @@
 			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
 			<triggers>clean,full,incremental,</triggers>
 			<arguments>
+				<dictionary>
+					<key>?children?</key>
+					<value>?name?=outputEntries\|?children?=?name?=entry\\\\\\\|\\\|?name?=entry\\\\\\\|\\\|\||</value>
+				</dictionary>
 				<dictionary>
 					<key>?name?</key>
 					<value></value>
