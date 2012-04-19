@@ -4,3 +4,50 @@ The seminar schedule is specified within 3 csv-files.
 (Examples can be found in the testfiles directory).
 
 In order to pass it has to meet certain constraints such as breaks between long lectures or non-overlapping lectures for the same lecturer/class/room.
+
+English task description:
+(loosly translated from the German original)
+
+Task Description
+================
+A seminar organizer has to take certain boundary conditions regarding the lecturers and the lectures into consideration.
+There are lectures offered with the length of 45 min and 90min. After 90 min there has to be a break, meaning after a 90 minute lecture there cannot be another course immediately afterwards. Lectures with the same lecturer cannot be at the same time (there exist two parallel lecture groups). Furthermore some lectures depend on each other regarding the subject matter. The task is to check the schedule for consistency.
+
+Input
+=====
+Lectures with lecturer and group correlation, length of the lecture, room assignment and precondition.
+
+Output
+======
+Result of the consistency check
+
+Case input
+==========
+A specific lecture schedule is now inserted and is to be checked upon consistency. Are the requirements met?
+
+
+German task description:
+
+Aufgabenstellung
+================
+Ein Seminarveranstalter muss Randbedingungen der Dozenten und der
+Unterrichtsfächer beachten. Es werden Lehrveranstaltungen der Länge 45 min und
+90 min angeboten. Nach 90 min muss eine Pause sein, d.h. nach einer 90 minütigen
+Vorlesung darf nicht unmittelbar eine andere laufen. Lehrveranstaltungen des
+gleichen Dozenten dürfen nicht parallel laufen (es gibt zwei parallele
+Seminargruppen). Zudem bauen manche Vorlesungen aufeinander auf. Es gilt nun die
+Randbedingungen auf Konsistenz zu prüfen.
+
+Eingabe
+=======
+Veranstaltungen und Dozenten und Seminargruppenzuordnung, Länge der
+Veranstaltung, Raumzuordnung, Voraussetzungen
+
+Ausgabe
+=======
+Konsistenzprüfungsergebnis
+
+Falleingabe
+===========
+Ein konkreter Seminarplan wird eingegeben und soll nun bzgl. der Randbedingungen
+geprüft werden. Sind diese eingehalten?
