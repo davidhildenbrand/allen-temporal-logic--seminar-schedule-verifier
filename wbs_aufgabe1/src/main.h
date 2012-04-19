@@ -1,18 +1,19 @@
 /*
- Name        : WBS Aufgabe 1
- Author      : David Hildenbrand, Tobias Schoknecht
- Copyright   : David Hildenbrand, Tobias Schoknecht 2012
-* ----------------------------------------------------------------------------
-* "THE BEER-WARE LICENSE" (Revision 42):
-* david.hildenbrand@gmail.com and tobias.schoknecht@gmail.com wrote this file.
-* As long as you retain this notice you can do whatever you want with this
-* stuff. If we meet some day, and you think this stuff is worth it, you can
-* buy us a beer in return David Hildenbrand, Tobias Schoknecht
-* ----------------------------------------------------------------------------
+ * Name        : main.h
+ * Project     : Allen temporal logic: seminar schedule verifier
+ * Author      : David Hildenbrand, Tobias Schoknecht
+ * Copyright   : David Hildenbrand, Tobias Schoknecht 2012
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * david.hildenbrand@gmail.com and tobias.schoknecht@gmail.com wrote this file.
+ * As long as you retain this notice you can do whatever you want with this
+ * stuff. If we meet some day, and you think this stuff is worth it, you can
+ * buy us a beer in return David Hildenbrand, Tobias Schoknecht
+ * ----------------------------------------------------------------------------
  */
 
-#ifndef WBS_AUFGABE1_H_
-#define WBS_AUFGABE1_H_
+#ifndef MAIN_H_
+#define MAIN_H_
 
 #include "allen.h"
 #include "allen_web.h"
@@ -125,4 +126,4 @@ int count_char(char* string, char element);
 //convert a string with the format HH:MM to minutes
 unsigned short time_in_min_from_string(char* string);
 
-#endif /* WBS_AUFGABE1_H_ */
+#endif /* MAIN_H_ */

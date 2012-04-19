@@ -1,21 +1,22 @@
 /*
- Name        : WBS Aufgabe 1
- Author      : David Hildenbrand, Tobias Schoknecht
- Copyright   : David Hildenbrand, Tobias Schoknecht 2012
-* ----------------------------------------------------------------------------
-* "THE BEER-WARE LICENSE" (Revision 42):
-* david.hildenbrand@gmail.com and tobias.schoknecht@gmail.com wrote this file.
-* As long as you retain this notice you can do whatever you want with this
-* stuff. If we meet some day, and you think this stuff is worth it, you can
-* buy us a beer in return David Hildenbrand, Tobias Schoknecht
-* ----------------------------------------------------------------------------
+ * Name        : main.c
+ * Project     : Allen temporal logic: seminar schedule verifier
+ * Author      : David Hildenbrand, Tobias Schoknecht
+ * Copyright   : David Hildenbrand, Tobias Schoknecht 2012
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * david.hildenbrand@gmail.com and tobias.schoknecht@gmail.com wrote this file.
+ * As long as you retain this notice you can do whatever you want with this
+ * stuff. If we meet some day, and you think this stuff is worth it, you can
+ * buy us a beer in return David Hildenbrand, Tobias Schoknecht
+ * ----------------------------------------------------------------------------
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "allen.h"
 #include "allen_web.h"
-#include "wbs_aufgabe1.h"
+#include "main.h"
 #include "logger.h"
 
 /*	global variables	*/
@@ -30,7 +31,6 @@ struct file3 file3;
 char found_events[FILE1_ENTRY_COUNT_MAX];
 //required events in the schedule
 char required_events[FILE1_ENTRY_COUNT_MAX];
-
 
 int main(int argc, char** argv) {
 	int error = EXIT_SUCCESS;
@@ -557,10 +557,10 @@ void process_group_dependence(struct allen_web* web) {
 			//default is that they have a break in between
 			allen_relation relation = refrel;
 
-
 			if (file1.entries[i]->group == file1.entries[j]->group) {
 				//if one lecture is longer than 90 min, they can't meet otherwise both can meet
-				if (file1.entries[i]->length < 2 && file1.entries[j]->length < 2) {
+				if (file1.entries[i]->length < 2
+						&& file1.entries[j]->length < 2) {
 					relation |= Am;
 					relation |= Ami;
 				}
@@ -665,7 +665,8 @@ short process_basic_checks(struct allen_web* web) {
 		for (k = 0; k < file2.count; ++k) {
 			if (file2.entries[k]->post == entrya->event) {
 				//mark it as required
-				required_events[get_mapped_index(web, file2.entries[k]->pre)] = 1;
+				required_events[get_mapped_index(web, file2.entries[k]->pre)] =
+						1;
 			}
 		}
 
@@ -747,32 +748,33 @@ short process_90min_break_check(struct allen_web* web) {
 			unsigned short group2 = file1.entries[j]->group;
 
 			//find 2 events of the same group which meet and have been found in the schedule
-			if (found_events[i] && found_events[j] && group1 == group2 && get_relation(web, i, j) == Am) {
-				//j only allows connection to other nodes of type "<"
-				//process all edges of j
-				for (k = 0; k < web->size; ++k) {
-					unsigned short group3 = file1.entries[k]->group;
-					//not the edge which is checked at the moment and only events with the same group and which have been found in the schedule!
-					if (found_events[k] && j != k && k != i && group2 == group3) {
-						//this edge can only be smaller or greater!
-						allen_relation erg = intersect_relation(web, j, k,
-								refrel);
-						if (erg == 0) {
-							log(ERROR,
-									"Detected incompatible events %d, %d and %d.",
-									get_mapped_nr(web, i),
-									get_mapped_nr(web, j),
-									get_mapped_nr(web, k));
-							log(ERROR,
-									"The group %d has more than two lectures of 45min without a break!",
-									group1);
-							return 1;
+			if (found_events[i] && found_events[j]
+					&& group1 == group2&& get_relation(web, i, j) == Am) {
+					//j only allows connection to other nodes of type "<"
+					//process all edges of j
+for					(k = 0; k < web->size; ++k) {
+						unsigned short group3 = file1.entries[k]->group;
+						//not the edge which is checked at the moment and only events with the same group and which have been found in the schedule!
+						if (found_events[k] && j != k && k != i && group2 == group3) {
+							//this edge can only be smaller or greater!
+							allen_relation erg = intersect_relation(web, j, k,
+									refrel);
+							if (erg == 0) {
+								log(ERROR,
+										"Detected incompatible events %d, %d and %d.",
+										get_mapped_nr(web, i),
+										get_mapped_nr(web, j),
+										get_mapped_nr(web, k));
+								log(ERROR,
+										"The group %d has more than two lectures of 45min without a break!",
+										group1);
+								return 1;
+							}
 						}
 					}
 				}
 			}
 		}
-	}
 	return 0;
 }
 

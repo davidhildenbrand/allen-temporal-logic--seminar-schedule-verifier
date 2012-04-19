@@ -1,14 +1,15 @@
 /*
- Name        : WBS Aufgabe 1
- Author      : David Hildenbrand, Tobias Schoknecht
- Copyright   : David Hildenbrand, Tobias Schoknecht 2012
-* ----------------------------------------------------------------------------
-* "THE BEER-WARE LICENSE" (Revision 42):
-* david.hildenbrand@gmail.com and tobias.schoknecht@gmail.com wrote this file.
-* As long as you retain this notice you can do whatever you want with this
-* stuff. If we meet some day, and you think this stuff is worth it, you can
-* buy us a beer in return David Hildenbrand, Tobias Schoknecht
-* ----------------------------------------------------------------------------
+ * Name        : allen_web.c
+ * Project     : Allen temporal logic: seminar schedule verifier
+ * Author      : David Hildenbrand, Tobias Schoknecht
+ * Copyright   : David Hildenbrand, Tobias Schoknecht 2012
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * david.hildenbrand@gmail.com and tobias.schoknecht@gmail.com wrote this file.
+ * As long as you retain this notice you can do whatever you want with this
+ * stuff. If we meet some day, and you think this stuff is worth it, you can
+ * buy us a beer in return David Hildenbrand, Tobias Schoknecht
+ * ----------------------------------------------------------------------------
  */
 
 #include "allen_web.h"
@@ -26,7 +27,7 @@ struct allen_web* new_web(unsigned int size) {
 	//create only a half table. first row has 0, last row has i-1 entries!
 	//-> other relations are either "=" or can be computed using the reverse!
 	for (i = 0; i < size; ++i) {
-		if(i == 0)
+		if (i == 0)
 			//could be removed but it is easier to access the data!
 			web->relations[i] = NULL;
 		else
@@ -45,19 +46,19 @@ struct allen_web* new_web(unsigned int size) {
 }
 
 struct allen_web* copy_web(struct allen_web* web) {
-	if(web == NULL)
+	if (web == NULL)
 		return NULL;
 
 	struct allen_web* copy = new_web(web->size);
-	int i,j;
+	int i, j;
 
 	copy->size = web->size;
 
 	//copy the mapping and the data
-	for(i=0;i<copy->size;++i){
+	for (i = 0; i < copy->size; ++i) {
 		copy->node_mapping[i] = web->node_mapping[i];
 
-		for(j=0;j<i;++j)
+		for (j = 0; j < i; ++j)
 			copy->relations[i][j] = web->relations[i][j];
 	}
 
@@ -120,13 +121,13 @@ short map_nr_to_index(struct allen_web* web, unsigned short nr,
 
 	//index is already mapped?
 	if (web->node_mapping[index] != -1)
-		log(WARN,"Overwriting existing mapping of index %d.", index);
+		log(WARN, "Overwriting existing mapping of index %d.", index);
 
 	old_index = get_mapped_index(web, nr);
 
 	//nr mapped to another index?
 	if (old_index >= 0) {
-		log(ERROR,"Nr %d already mapped to index %d.", nr, old_index);
+		log(ERROR, "Nr %d already mapped to index %d.", nr, old_index);
 		return -2;
 	}
 
@@ -177,7 +178,7 @@ allen_relation get_relation(struct allen_web* web, int a, int b) {
 	if (a < 0 || a >= web->size || b < 0 || b >= web->size) {
 		return 0;
 	}
-	if(a == b)
+	if (a == b)
 		return Aeq;
 	else if (a < b)
 		return reverse_allen_rel(web->relations[b][a]);
@@ -240,8 +241,8 @@ void print_web(struct allen_web* web, FILE* file, char delimiter) {
 		fprintf(file, "%d%c", get_mapped_nr(web, i), delimiter);
 		for (j = 0; j < web->size; ++j) {
 
-			char* rel = allen_rel_to_ascii(get_relation(web,i,j));
-			fprintf(file, "%s%c", rel,delimiter);
+			char* rel = allen_rel_to_ascii(get_relation(web, i, j));
+			fprintf(file, "%s%c", rel, delimiter);
 			free(rel);
 		}
 		fprintf(file, "\n");
@@ -257,7 +258,7 @@ short check_tripple_consistency(struct allen_web* web, unsigned int a,
 	allen_relation ac = get_relation(web, a, c);
 
 	if (check_allen_rel_consistency(ab, bc, ac) != 0) {
-		log(ERROR,"Consistency check of %d,%d and %d failed!", a, b, c);
+		log(ERROR, "Consistency check of %d,%d and %d failed!", a, b, c);
 		return 1;
 	} else
 		return 0;
@@ -277,7 +278,7 @@ short path_consistency_method_tripple(struct allen_web* web, unsigned int a,
 
 	//error in the web
 	if (new_ac == 0) {
-		log(ERROR,"Consistency check of %d,%d and %d failed!",
+		log(ERROR, "Consistency check of %d,%d and %d failed!",
 				get_mapped_nr(web, a), get_mapped_nr(web, b),
 				get_mapped_nr(web, c));
 		return -1;
@@ -296,10 +297,11 @@ short path_consistency_method(struct allen_web* web) {
 		return -1;
 
 	if (web->size < 3) {
-		log(ERROR,"Size of web is smaller than 3. Cannot check consistency!");
+		log(ERROR, "Size of web is smaller than 3. Cannot check consistency!");
 		return -2;
 	} else if (web->size > 3) {
-		log(WARN,"Size of web is bigger than 3. Web might be path-consistent but incomplete and unsatisfiable!");
+		log(WARN,
+				"Size of web is bigger than 3. Web might be path-consistent but incomplete and unsatisfiable!");
 	}
 
 	int i, j, k;
@@ -314,8 +316,9 @@ short path_consistency_method(struct allen_web* web) {
 			for (j = 0; j < web->size; ++j) {
 				for (k = 0; k < web->size; ++k) {
 					//3 different nodes
-					if(i!=j && i!=k && j!=k){
-						short ret = path_consistency_method_tripple(web, i, j, k);
+					if (i != j && i != k && j != k) {
+						short ret = path_consistency_method_tripple(web, i, j,
+								k);
 						if (ret == 1)
 							change = 1;
 						if (ret == -1)

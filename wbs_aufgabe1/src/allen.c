@@ -1,14 +1,15 @@
 /*
- Name        : WBS Aufgabe 1
- Author      : David Hildenbrand, Tobias Schoknecht
- Copyright   : David Hildenbrand, Tobias Schoknecht 2012
-* ----------------------------------------------------------------------------
-* "THE BEER-WARE LICENSE" (Revision 42):
-* david.hildenbrand@gmail.com and tobias.schoknecht@gmail.com wrote this file.
-* As long as you retain this notice you can do whatever you want with this
-* stuff. If we meet some day, and you think this stuff is worth it, you can
-* buy us a beer in return David Hildenbrand, Tobias Schoknecht
-* ----------------------------------------------------------------------------
+ * Name        : allen.c
+ * Project     : Allen temporal logic: seminar schedule verifier
+ * Author      : David Hildenbrand, Tobias Schoknecht
+ * Copyright   : David Hildenbrand, Tobias Schoknecht 2012
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * david.hildenbrand@gmail.com and tobias.schoknecht@gmail.com wrote this file.
+ * As long as you retain this notice you can do whatever you want with this
+ * stuff. If we meet some day, and you think this stuff is worth it, you can
+ * buy us a beer in return David Hildenbrand, Tobias Schoknecht
+ * ----------------------------------------------------------------------------
  */
 
 #include <stdio.h>
@@ -17,34 +18,34 @@
 #include "allen.h"
 
 const allen_relation allen_table[REL_COUNT][REL_COUNT] = { { Aeq, Asm, Abi, Ad,
-		Adi, Ao, Aoi, Am, Ami, As, Asi, Af, Afi }, { Asm, Asm, All, Asm | Ao
-		| Am | Ad | As, Asm, Asm, Asm | Ao | Am | Ad | As, Asm, Asm | Ao | Am | Ad
-		| As, Asm, Asm, Asm | Ao | Am | Ad | As, Asm }, { Abi, All, Abi, Abi | Aoi
+Adi, Ao, Aoi, Am, Ami, As, Asi, Af, Afi }, { Asm, Asm, All, Asm | Ao | Am | Ad
+		| As, Asm, Asm, Asm | Ao | Am | Ad | As, Asm, Asm | Ao | Am | Ad | As,
+		Asm, Asm, Asm | Ao | Am | Ad | As, Asm }, { Abi, All, Abi, Abi | Aoi
 		| Ami | Ad | Af, Abi, Abi | Aoi | Ami | Ad | Af, Abi, Abi | Aoi | Ami
 		| Ad | Af, Abi, Abi | Aoi | Ami | Ad | Af, Abi, Abi, Abi }, { Ad, Asm,
-		Abi, Ad, All, Asm | Ao | Am | Ad | As, Abi | Aoi | Ami | Ad | Af, Asm,
-		Abi, Ad, Abi | Aoi | Ami | Ad | Af, Ad, Asm | Ao | Am | Ad | As }, {
-		Adi, Asm | Ao | Am | Adi | Afi, Asm | Aoi | Ami | Adi | Asi, Aeq | Ad
-				| Adi | Ao | Aoi | As | Asi | Af | Afi, Adi, Ao | Adi | Afi, Aoi
-				| Adi | Asi, Ao | Adi | Afi, Aoi | Adi | Asi, Ao | Adi | Afi,
-		Adi, Aoi | Adi | Asi, Adi }, { Ao, Asm, Abi | Aoi | Ami | Adi | Asi, Ao
-		| Ad | As, Asm | Ao | Am | Adi | Afi, Asm | Ao | Am, Aeq | Ad | Adi | Ao
+Abi, Ad, All, Asm | Ao | Am | Ad | As, Abi | Aoi | Ami | Ad | Af, Asm,
+Abi, Ad, Abi | Aoi | Ami | Ad | Af, Ad, Asm | Ao | Am | Ad | As }, {
+Adi, Asm | Ao | Am | Adi | Afi, Asm | Aoi | Ami | Adi | Asi, Aeq | Ad | Adi | Ao
+		| Aoi | As | Asi | Af | Afi, Adi, Ao | Adi | Afi, Aoi | Adi | Asi, Ao
+		| Adi | Afi, Aoi | Adi | Asi, Ao | Adi | Afi,
+Adi, Aoi | Adi | Asi, Adi }, { Ao, Asm, Abi | Aoi | Ami | Adi | Asi, Ao | Ad
+		| As, Asm | Ao | Am | Adi | Afi, Asm | Ao | Am, Aeq | Ad | Adi | Ao
 		| Aoi | As | Asi | Af | Afi, Asm, Aoi | Adi | Asi, Ao, Adi | Afi | Ao,
-		Ad | As | Ao, Asm | Ao | Am }, { Aoi, Asm | Ao | Am | Adi | Afi, Abi,
-		Aoi | Ad | Af, Asm | Aoi | Ami | Adi | Asi, Aeq | Ad | Adi | Ao | Aoi
-				| As | Asi | Af | Afi, Abi | Aoi | Ami, Ao | Adi | Afi, Abi, Aoi
-				| Ad | Af, Abi | Aoi | Ami, Aoi, Aoi | Asi | Adi }, { Am, Asm,
-		Abi | Aoi | Ami | Adi | Asi, Ao | Ad | As, Asm, Asm, Ao | Ad | As, Asm,
-		Aeq | Af | Afi, Am, Am, Ad | As | Ao, Asm }, { Ami, Asm | Ao | Am | Adi
-		| Afi, Abi, Aoi | Ad | Af, Abi, Aoi | Ad | Af, Abi, Aeq | As | Asi,
+Ad | As | Ao, Asm | Ao | Am }, { Aoi, Asm | Ao | Am | Adi | Afi, Abi,
+Aoi | Ad | Af, Asm | Aoi | Ami | Adi | Asi, Aeq | Ad | Adi | Ao | Aoi | As | Asi
+		| Af | Afi, Abi | Aoi | Ami, Ao | Adi | Afi, Abi, Aoi | Ad | Af, Abi
+		| Aoi | Ami, Aoi, Aoi | Asi | Adi }, { Am, Asm,
+Abi | Aoi | Ami | Adi | Asi, Ao | Ad | As, Asm, Asm, Ao | Ad | As, Asm,
+Aeq | Af | Afi, Am, Am, Ad | As | Ao, Asm }, { Ami, Asm | Ao | Am | Adi | Afi,
+		Abi, Aoi | Ad | Af, Abi, Aoi | Ad | Af, Abi, Aeq | As | Asi,
 		Abi, Ad | Af | Aoi, Abi, Ami, Ami }, { As, Asm, Abi, Ad, Asm | Ao | Am
 		| Adi | Afi, Asm | Ao | Am, Aoi | Ad | Af, Asm, Ami, As, Aeq | As | Asi,
-		Ad, Asm | Ao | Am }, { Asi, Asm | Ao | Am | Adi | Afi, Abi, Aoi | Ad
-		| Af, Adi, Ao | Adi | Afi, Aoi, Ao | Adi | Afi, Ami, Aeq | As | Asi,
+Ad, Asm | Ao | Am }, { Asi, Asm | Ao | Am | Adi | Afi, Abi, Aoi | Ad | Af, Adi,
+		Ao | Adi | Afi, Aoi, Ao | Adi | Afi, Ami, Aeq | As | Asi,
 		Asi, Aoi, Adi }, { Af, Asm, Abi, Ad, Abi | Aoi | Ami | Adi | Asi, Ao
 		| Ad | As, Abi | Aoi | Ami, Am, Abi, Ad, Abi | Aoi | Ami, Af, Aeq | Af
 		| Afi }, { Afi, Asm, Abi | Aoi | Ami | Adi | Asi, Ao | Ad | As, Adi, Ao,
-		Aoi | Adi | Asi, Am, Aoi | Adi | Asi, Ao, Adi, Aeq | Af | Afi, Afi } };
+Aoi | Adi | Asi, Am, Aoi | Adi | Asi, Ao, Adi, Aeq | Af | Afi, Afi } };
 
 allen_relation reverse_allen_rel(allen_relation source) {
 	allen_relation destination = 0x0;
@@ -241,10 +242,11 @@ allen_relation allen_p_function(allen_relation a, allen_relation b) {
 	return destination;
 }
 
-short check_allen_rel_consistency(allen_relation ab, allen_relation bc, allen_relation ac){
-	allen_relation calculated_ac = allen_p_function(ab,bc);
+short check_allen_rel_consistency(allen_relation ab, allen_relation bc,
+		allen_relation ac) {
+	allen_relation calculated_ac = allen_p_function(ab, bc);
 
-	if(intersect_allen_rel(ac,calculated_ac) == 0)
+	if (intersect_allen_rel(ac, calculated_ac) == 0)
 		return 1;
 	else
 		return 0;
@@ -307,10 +309,10 @@ void print_allen_table(FILE* file, char delimiter) {
 		return;
 
 	fprintf(file, "\n");
-	for(i=0;i<REL_COUNT;++i){
-		for(j=0;j<REL_COUNT;++j){
+	for (i = 0; i < REL_COUNT; ++i) {
+		for (j = 0; j < REL_COUNT; ++j) {
 			char* rel = allen_rel_to_ascii(allen_table[i][j]);
-			fprintf(file, "%s%c", rel,delimiter);
+			fprintf(file, "%s%c", rel, delimiter);
 			free(rel);
 		}
 		fprintf(file, "\n");

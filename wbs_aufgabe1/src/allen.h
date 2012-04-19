@@ -1,7 +1,15 @@
 /*
- Name        : WBS Aufgabe 1
- Author      : David Hildenbrand, Tobias Schoknecht
- Copyright   : David Hildenbrand, Tobias Schoknecht 2012
+ * Name        : allen.h
+ * Project     : Allen temporal logic: seminar schedule verifier
+ * Author      : David Hildenbrand, Tobias Schoknecht
+ * Copyright   : David Hildenbrand, Tobias Schoknecht 2012
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * david.hildenbrand@gmail.com and tobias.schoknecht@gmail.com wrote this file.
+ * As long as you retain this notice you can do whatever you want with this
+ * stuff. If we meet some day, and you think this stuff is worth it, you can
+ * buy us a beer in return David Hildenbrand, Tobias Schoknecht
+ * ----------------------------------------------------------------------------
  */
 
 #ifndef _ALLEN_H_
@@ -71,7 +79,8 @@ allen_relation intersect_allen_rel(allen_relation a, allen_relation b);
 allen_relation allen_p_function(allen_relation a, allen_relation b);
 
 //check if three relations are consistent a->b, b->c, a->c
-short check_allen_rel_consistency(allen_relation ab, allen_relation bc, allen_relation ac);
+short check_allen_rel_consistency(allen_relation ab, allen_relation bc,
+		allen_relation ac);
 
 //determine the relation of two intervals having a start and a stop time
 allen_relation allen_rel_from_intervals(unsigned int starta, unsigned int stopa,

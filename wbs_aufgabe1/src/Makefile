@@ -1,9 +1,9 @@
 CC      = /usr/bin/gcc
 CFLAGS  = -Wall -g -D_REENTRANT 
 LDFLAGS = -Wl,-t 
-NAME = wbs_aufgabe1
+NAME = main
 
-OBJ = allen_web.o allen.o logger.o wbs_aufgabe1.o 
+OBJ = allen_web.o allen.o logger.o main.o 
 
 wbs_aufgabe1: $(OBJ)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJ) $(LDFLAGS)
